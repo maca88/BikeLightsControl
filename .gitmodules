@@ -1,0 +1,3 @@
+[submodule "Source/SmartBikeLights"]
+	path = Source/SmartBikeLights
+	url = https://github.com/maca88/SmartBikeLights

@@ -1,0 +1,20 @@
+<strings>
+    <string id="AppName">Bike Lights Control</string>
+    <string id="LC">Lights Configuration</string>
+    <string id="AC">Button Color</string>
+    <string id="BC">Background Color</string>
+
+    <string id="Red">Red</string>
+    <string id="DarkRed">Dark Red</string>
+    <string id="Orange">Orange</string>
+    <string id="Yellow">Yellow</string>
+    <string id="Green">Green</string>
+    <string id="DarkGreen">Dark Green</string>
+    <string id="Blue">Blue</string>
+    <string id="DarkBlue">Dark Blue</string>
+    <string id="Purple">Purple</string>
+    <string id="Pink">Pink</string>
+    <string id="White">White</string>
+    <string id="Black">Black</string>
+    <string id="Auto">Auto</string>
+</strings>

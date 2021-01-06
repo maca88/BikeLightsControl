@@ -1,0 +1,21 @@
+project.manifest = manifest.xml
+#excludeBase=deviceNetwork;polygons;dataField
+excludeBase=testNetwork;polygons;dataField
+
+base.sourcePath = source;SmartBikeLights/Source/SmartBikeLights/source-common
+
+nonTouchScreen = $(excludeBase);touchScreen;noLightButtons
+rectangleNonTouchScreen = $(nonTouchScreen);round
+
+# maps default
+rectangle.excludeAnnotations = $(excludeBase);nonTouchScreen;noLightButtons;round;settings
+round.excludeAnnotations = $(nonTouchScreen);rectangle
+semiround.excludeAnnotations = $(nonTouchScreen);rectangle
+base.excludeAnnotations = $(rectangle.excludeAnnotations)
+
+# Rectangle non touch screen devices
+edge_520.excludeAnnotations = $(rectangleNonTouchScreen)
+edge520plus.excludeAnnotations = $(rectangleNonTouchScreen)
+edge530.excludeAnnotations = $(rectangleNonTouchScreen)
+venusq.excludeAnnotations = $(rectangleNonTouchScreen)
+venusqm.excludeAnnotations = $(rectangleNonTouchScreen)
