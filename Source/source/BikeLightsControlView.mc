@@ -53,18 +53,24 @@ class BikeLightsControlView extends BikeLightsView {
     private var _insideMenu = false;
     private var _menuOpening = false;
     private var _backgroundColor = null;
+    private var _defaultSunset;
+    private var _defaultSunrise;
 
     function initialize() {
         BikeLightsView.initialize();
         Position.enableLocationEvents(Position.LOCATION_ONE_SHOT, method(:onPosition));
+        var zone = System.getClockTime().timeZoneOffset;
+        _defaultSunset = getSecondsOfDay(65700, /* 18:15 */ zone);
+        _defaultSunrise = getSecondsOfDay(22500, /* 6:15 */ zone);
     }
 
     function onPosition(info) {
         var position = info.position.toDegrees();
         var time = Gregorian.utcInfo(Time.now(), Time.FORMAT_SHORT);
         var jd = getJD(time.year, time.month, time.day);
-        _sunriseTime = Math.round(calcSunriseSetUTC(true, jd, position[0], position[1]) * 60).toNumber();
-        _sunsetTime = Math.round(calcSunriseSetUTC(false, jd, position[0], position[1]) * 60).toNumber();
+        _sunriseTime = getSunriseSet(true, jd, position);
+        _sunsetTime = getSunriseSet(false, jd, position);
+        WatchUi.requestUpdate();
     }
 
     (:settings)
@@ -201,12 +207,16 @@ class BikeLightsControlView extends BikeLightsView {
 
     protected function getBackgroundColor() {
         if (_backgroundColor == 1) {
-            var sunset = _sunsetTime != null ? _sunsetTime : 65700; /* 18:15 */
-            var sunrise = _sunriseTime != null ? _sunriseTime : 22500; /* 6:15 */
+            var sunset = _sunsetTime != null ? _sunsetTime : _defaultSunset;
+            var sunrise = _sunriseTime != null ? _sunriseTime : _defaultSunrise;
             var now = (Time.now().value() - _todayMoment) % 86400;
-            return now > sunset || now < sunrise
-                ? 0x000000 /* COLOR_BLACK */
-                : 0xFFFFFF; /* COLOR_WHITE */
+            var isDay = sunrise > sunset /* Whether timespan goes into the next day */
+                ? now > sunrise || now < sunset
+                : now > sunrise && now < sunset;
+
+            return isDay
+                ? 0xFFFFFF /* COLOR_WHITE */
+                : 0x000000; /* COLOR_BLACK */
         }
 
         return _backgroundColor;
@@ -274,5 +284,10 @@ class BikeLightsControlView extends BikeLightsView {
 
     protected function setLightData(id, lightType, value) {
         // Do not store any data
+    }
+
+    private function getSecondsOfDay(time, zone) {
+        var value = time - zone;
+        return (value < 0 ? value + 86400 : value) % 86400;
     }
 }
