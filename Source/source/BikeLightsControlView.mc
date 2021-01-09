@@ -222,6 +222,10 @@ class BikeLightsControlView extends BikeLightsView {
         return _backgroundColor;
     }
 
+    protected function getPropertyValue(key) {
+        return key.equals("RL") || key.equals("CMO") ? false : Properties.getValue(key);
+    }
+
     protected function preCalculate(dc, width, height) {
         var padding = 3;
         var settings = WatchUi.loadResource(Rez.JsonData.Settings);
