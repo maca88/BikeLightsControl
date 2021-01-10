@@ -60,8 +60,8 @@ class BikeLightsControlView extends BikeLightsView {
         BikeLightsView.initialize();
         Position.enableLocationEvents(Position.LOCATION_ONE_SHOT, method(:onPosition));
         var zone = System.getClockTime().timeZoneOffset;
-        _defaultSunset = getSecondsOfDay(65700, /* 18:15 */ zone);
-        _defaultSunrise = getSecondsOfDay(22500, /* 6:15 */ zone);
+        _defaultSunset = getSecondsOfDay(65700 /* 18:15 */ - zone);
+        _defaultSunrise = getSecondsOfDay(22500 /* 6:15 */ - zone);
     }
 
     function onPosition(info) {
@@ -288,10 +288,5 @@ class BikeLightsControlView extends BikeLightsView {
 
     protected function setLightData(id, lightType, value) {
         // Do not store any data
-    }
-
-    private function getSecondsOfDay(time, zone) {
-        var value = time - zone;
-        return (value < 0 ? value + 86400 : value) % 86400;
     }
 }
