@@ -130,11 +130,12 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     }
 
     function updateLight(light, mode) {
-        if (_initializedLights == 0) {
+        var lightType = light.type;
+        if (_initializedLights == 0 || (lightType != 0 /* LIGHT_TYPE_HEADLIGHT */ && lightType != 2 /* LIGHT_TYPE_TAILLIGHT */)) {
             return;
         }
 
-        var lightData = _initializedLights == 1 || light.type == 0 /* LIGHT_TYPE_HEADLIGHT */
+        var lightData = _initializedLights == 1 || lightType == 0 /* LIGHT_TYPE_HEADLIGHT */
             ? _primaryLightData
             : _secondaryLightData;
         lightData[0] = light;

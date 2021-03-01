@@ -170,6 +170,10 @@ class BikeLightsControlView extends BikeLightsView {
     }
 
     function onNetworkStateUpdate(networkState) {
+        if (_lightNetwork == null) {
+            return; // The view is hidden
+        }
+
         BikeLightsView.onNetworkStateUpdate(networkState);
         WatchUi.requestUpdate();
         if (_menuOpening) {
@@ -187,6 +191,10 @@ class BikeLightsControlView extends BikeLightsView {
     }
 
     function updateLight(light, mode) {
+        if (_lightNetwork == null) {
+            return; // The view is hidden
+        }
+
         BikeLightsView.updateLight(light, mode);
         WatchUi.requestUpdate();
     }

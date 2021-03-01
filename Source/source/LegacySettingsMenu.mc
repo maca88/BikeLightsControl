@@ -7,7 +7,7 @@ module LegacySettings {
         "Network (N)",
         "Manual (M)"
     ];
-    
+
     const controlModeSymbols = [
         :Smart,
         :Network,
@@ -33,7 +33,10 @@ module LegacySettings {
     ];
 
     function getLightData(lightType, view) {
-        return view.headlightData[0].type == lightType ? view.headlightData : view.taillightData;
+        var headlight = view.headlightData[0];
+        return headlight == null ? null // The network was disconnected
+            : headlight.type == lightType ? view.headlightData
+            : view.taillightData;
     }
 
     class LightsMenu extends WatchUi.Menu {
@@ -86,7 +89,6 @@ module LegacySettings {
             Menu.setTitle("Control mode");
             _lightType = lightType;
             _view = view.weak();
-            var lightData = getLightData(lightType, view);
             for (var i = 0; i < controlModeNames.size(); i++) {
                 if (i == 0 && view has :updateUi) {
                     continue; // Do not show smart mode for the widget
@@ -98,6 +100,10 @@ module LegacySettings {
 
         function onSelect(menuItem) {
             var lightData = getLightData(_lightType, _view.get());
+            if (lightData == null) {
+                return;
+            }
+
             var oldControlMode = lightData[4];
             var controlMode = controlModeSymbols.indexOf(menuItem);
             if (controlMode < 0 || oldControlMode == controlMode) {
@@ -119,7 +125,6 @@ module LegacySettings {
             Menu.setTitle("Light modes");
             _lightType = lightType;
             _view = view.weak();
-            var lightData = getLightData(lightType, view);
             var lightSettings = lightType == 0 /* LIGHT_TYPE_HEADLIGHT */ ? view.headlightSettings : view.taillightSettings;
             for (var i = 1; i < lightSettings.size(); i += 2) {
                 var mode = lightSettings[i + 1];
@@ -130,6 +135,10 @@ module LegacySettings {
 
         function onSelect(menuItem) {
             var lightData = getLightData(_lightType, _view.get());
+            if (lightData == null) {
+                return;
+            }
+
             var mode = lightModes.indexOf(menuItem);
             if (mode > 9) {
                 mode += 49;
@@ -149,7 +158,7 @@ module LegacySettings {
             MenuInputDelegate.initialize();
             _menu = menu.weak();
         }
-    
+
         function onMenuItem(menuItem) {
             if (_menu.stillAlive()) {
                 _menu.get().onSelect(menuItem);
