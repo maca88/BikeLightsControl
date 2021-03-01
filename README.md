@@ -42,6 +42,7 @@ Bike Lights Control is a [widget](https://developer.garmin.com/connect-iq/connec
 - Garmin Varia RTL510
 - Garmin Varia RTL515
 - Garmin Varia HL500
+- Garmin Varia UT800
 
 **NOTE:** In case your ANT+ light is not on the list, please check the following garmin thread: https://forums.garmin.com/developer/connect-iq/f/showcase/248492/data-field-smart-bike-lights
 

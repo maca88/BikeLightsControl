@@ -1,5 +1,25 @@
 using Toybox.Application;
+using Toybox.AntPlus;
 
+(:glance)
+class BikeLightNetworkListener extends AntPlus.LightNetworkListener {
+    private var _eventHandler;
+
+    function initialize(eventHandler) {
+        LightNetworkListener.initialize();
+        _eventHandler = eventHandler.weak();
+    }
+
+    function onLightNetworkStateUpdate(state) {
+        _eventHandler.get().onNetworkStateUpdate(state);
+    }
+
+    function onBikeLightUpdate(light) {
+        _eventHandler.get().updateLight(light, light.mode);
+    }
+}
+
+(:glance)
 class BikeLightsControlApp extends Application.AppBase {
 
     private var _view;
@@ -35,7 +55,6 @@ class BikeLightsControlApp extends Application.AppBase {
         return [ _view, new BikeLightsControlInputDelegate(_view) ];
     }
 
-    (:glance)
     function getGlanceView() {
         return [ new BikeLightsGlanceView() ];
     }
