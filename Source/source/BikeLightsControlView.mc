@@ -130,7 +130,7 @@ class BikeLightsControlView extends BikeLightsView {
 
         var size = _initializedLights;
         for (var i = 0; i < size; i++) {
-            var lightData = i == 0 ? headlightData : taillightData;
+            var lightData = getLightData(i, null);
             if (lightData[7] != null) {
                 if (lightData[9] <= 0) {
                     lightData[7] = null;
@@ -290,11 +290,11 @@ class BikeLightsControlView extends BikeLightsView {
         setLightAndControlMode(lightData, lightType, lightMode, newControlMode);
     }
 
-    protected function getLightData(id, lightType, defaultValue) {
+    protected function getLightProperty(id, lightType, defaultValue) {
         return defaultValue;
     }
 
-    protected function setLightData(id, lightType, value) {
+    protected function setLightProperty(id, lightType, value) {
         // Do not store any data
     }
 }
