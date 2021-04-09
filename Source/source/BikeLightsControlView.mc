@@ -67,9 +67,8 @@ class BikeLightsControlView extends BikeLightsView {
     function onPosition(info) {
         var position = info.position.toDegrees();
         var time = Gregorian.utcInfo(Time.now(), Time.FORMAT_SHORT);
-        var jd = getJD(time.year, time.month, time.day);
-        _sunriseTime = getSunriseSet(true, jd, position);
-        _sunsetTime = getSunriseSet(false, jd, position);
+        _sunriseTime = getSunriseSet(true, time, position);
+        _sunsetTime = getSunriseSet(false, time, position);
         WatchUi.requestUpdate();
     }
 
@@ -237,7 +236,7 @@ class BikeLightsControlView extends BikeLightsView {
     protected function preCalculate(dc, width, height) {
         var padding = 3;
         var settings = WatchUi.loadResource(Rez.JsonData.Settings);
-        _monochrome = !settings[0];
+        _separatorWidth = settings[0];
         _titleFont = settings[1];
         _titleTopPadding = settings[2];
         _offsetX = 0;

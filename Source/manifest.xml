@@ -12,7 +12,6 @@
             <iq:product id="edge1030bontrager"/>
             <iq:product id="edge1030plus"/>
             <iq:product id="edge520plus"/>
-            <iq:product id="edge530"/>
             <iq:product id="edge820"/>
             <iq:product id="edge830"/>
             <iq:product id="edge_1000"/>
@@ -60,7 +59,6 @@
             <iq:product id="vivoactive3mlte"/>
             <iq:product id="vivoactive4"/>
             <iq:product id="vivoactive4s"/>
-            <iq:product id="vivoactive_hr"/>
         </iq:products>
         <iq:permissions>
             <iq:uses-permission id="Positioning"/>
