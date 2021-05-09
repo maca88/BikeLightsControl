@@ -1,6 +1,6 @@
 project.manifest = manifest.xml
-#excludeBase=deviceNetwork;polygons;dataField
-excludeBase=testNetwork;polygons;dataField
+#excludeBase=deviceNetwork;polygons;dataField;monochromeScreen
+excludeBase=testNetwork;polygons;dataField;monochromeScreen
 
 base.sourcePath = source;SmartBikeLights/Source/SmartBikeLights/source-common
 
@@ -16,6 +16,5 @@ base.excludeAnnotations = $(rectangle.excludeAnnotations)
 # Rectangle non touch screen devices
 edge_520.excludeAnnotations = $(rectangleNonTouchScreen)
 edge520plus.excludeAnnotations = $(rectangleNonTouchScreen)
-edge530.excludeAnnotations = $(rectangleNonTouchScreen)
 venusq.excludeAnnotations = $(rectangleNonTouchScreen)
 venusqm.excludeAnnotations = $(rectangleNonTouchScreen)
