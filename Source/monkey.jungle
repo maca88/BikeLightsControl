@@ -1,16 +1,17 @@
 project.manifest = manifest.xml
-#excludeBase=deviceNetwork;polygons;dataField;monochromeScreen
-excludeBase=testNetwork;polygons;dataField;monochromeScreen
+#excludeBase=deviceNetwork;lowMemory;dataField;monochromeScreen
+excludeBase=testNetwork;lowMemory;dataField;monochromeScreen
 
 base.sourcePath = source;SmartBikeLights/Source/SmartBikeLights/source-common
 
 nonTouchScreen = $(excludeBase);touchScreen;noLightButtons
-rectangleNonTouchScreen = $(nonTouchScreen);round
+rectangleNonTouchScreen = $(nonTouchScreen);round;hasGlance
+roundNonTouchScreen = $(nonTouchScreen);rectangle
 
 # maps default
-rectangle.excludeAnnotations = $(excludeBase);nonTouchScreen;noLightButtons;round;settings
-round.excludeAnnotations = $(nonTouchScreen);rectangle
-semiround.excludeAnnotations = $(nonTouchScreen);rectangle
+rectangle.excludeAnnotations = $(excludeBase);nonTouchScreen;noLightButtons;round;settings;hasGlance
+round.excludeAnnotations = $(roundNonTouchScreen);hasGlance
+semiround.excludeAnnotations = $(roundNonTouchScreen);hasGlance
 base.excludeAnnotations = $(rectangle.excludeAnnotations)
 
 # Rectangle non touch screen devices
@@ -18,3 +19,25 @@ edge_520.excludeAnnotations = $(rectangleNonTouchScreen)
 edge520plus.excludeAnnotations = $(rectangleNonTouchScreen)
 venusq.excludeAnnotations = $(rectangleNonTouchScreen)
 venusqm.excludeAnnotations = $(rectangleNonTouchScreen)
+
+# Live glance (https://support.garmin.com/en-US/?faq=Eg6DSXgpma697JGZZnhYc6)
+descentmk2.excludeAnnotations = $(roundNonTouchScreen);staticGlance
+fenix6pro.excludeAnnotations = $(roundNonTouchScreen);staticGlance
+fenix6spro.excludeAnnotations = $(roundNonTouchScreen);staticGlance
+fenix6xpro.excludeAnnotations = $(roundNonTouchScreen);staticGlance
+fr245m.excludeAnnotations = $(roundNonTouchScreen);staticGlance
+fr745.excludeAnnotations = $(roundNonTouchScreen);staticGlance
+fr945.excludeAnnotations = $(roundNonTouchScreen);staticGlance
+
+# Static glance
+fenix6.excludeAnnotations = $(roundNonTouchScreen);liveGlance
+fenix6s.excludeAnnotations = $(roundNonTouchScreen);liveGlance
+fr245.excludeAnnotations = $(roundNonTouchScreen);liveGlance
+marqadventurer.excludeAnnotations = $(roundNonTouchScreen);liveGlance
+marqathlete.excludeAnnotations = $(roundNonTouchScreen);liveGlance
+marqaviator.excludeAnnotations = $(roundNonTouchScreen);liveGlance
+marqcaptain.excludeAnnotations = $(roundNonTouchScreen);liveGlance
+marqcommander.excludeAnnotations = $(roundNonTouchScreen);liveGlance
+marqdriver.excludeAnnotations = $(roundNonTouchScreen);liveGlance
+marqexpedition.excludeAnnotations = $(roundNonTouchScreen);liveGlance
+marqgolfer.excludeAnnotations = $(roundNonTouchScreen);liveGlance

@@ -48,8 +48,7 @@ class BikeLightsControlView extends BikeLightsView {
 
     private var _updateUiCounter = 0;
     private var _timer;
-    private var _menu;
-    private var _menuDelegate;
+    private var _menuRef;
     private var _insideMenu = false;
     private var _menuOpening = false;
     private var _backgroundColor = null;
@@ -78,17 +77,19 @@ class BikeLightsControlView extends BikeLightsView {
             return false;
         }
 
+        var menuContext = [headlightSettings, taillightSettings];
         var menu = _initializedLights > 1
             ? WatchUi has :Menu2
-                ? new Settings.LightsMenu(self)
-                : new LegacySettings.LightsMenu(self)
+                ? new Settings.LightsMenu(self, menuContext)
+                : new LegacySettings.LightsMenu(self, menuContext)
             : WatchUi has :Menu2
-                ? new Settings.LightMenu(headlightData[0].type, self)
-                : new LegacySettings.LightMenu(headlightData[0].type, self);
+                ? new Settings.LightMenu(headlightData[0].type, self, menuContext)
+                : new LegacySettings.LightMenu(headlightData[0].type, self, menuContext);
         var delegate = WatchUi has :Menu2
             ? new Settings.MenuDelegate(menu)
             : new LegacySettings.MenuDelegate(menu);
         _insideMenu = true;
+        _menuRef = menu.weak();
         WatchUi.pushView(menu, delegate, WatchUi.SLIDE_IMMEDIATE);
         return true;
     }
@@ -122,10 +123,10 @@ class BikeLightsControlView extends BikeLightsView {
     }
 
     function updateUi() {
-        // NOTE: Use only for testing purposes when using TestLightNetwork
-        //if (_lightNetwork != null && _lightNetwork has :update) {
-        //    _lightNetwork.update();
-        //}
+        // Needed for TestLightNetwork and IndividualLightNetwork
+        if (_errorCode == null && _lightNetwork != null && _lightNetwork has :update) {
+            _errorCode = _lightNetwork.update();
+        }
 
         var size = _initializedLights;
         for (var i = 0; i < size; i++) {
@@ -139,6 +140,10 @@ class BikeLightsControlView extends BikeLightsView {
                     continue;
                 }
             }
+        }
+
+        if (_menuOpening) {
+            _menuOpening = !openMenu();
         }
 
         _updateUiCounter = (_updateUiCounter + 1) % 60;
@@ -175,18 +180,18 @@ class BikeLightsControlView extends BikeLightsView {
 
         BikeLightsView.onNetworkStateUpdate(networkState);
         WatchUi.requestUpdate();
-        if (_menuOpening) {
-            _menuOpening = !openMenu();
-        }
     }
 
     function onSettingsChanged() {
         BikeLightsView.onSettingsChanged();
         _backgroundColor = Properties.getValue("BC");
         WatchUi.requestUpdate();
-        if (_menuOpening) {
-            _menuOpening = !openMenu();
+        if (_insideMenu && _menuRef.stillAlive()) {
+            _menuRef.get().close();
+            _menuOpening = true;
         }
+
+        resetLights();
     }
 
     function updateLight(light, mode) {
@@ -208,8 +213,7 @@ class BikeLightsControlView extends BikeLightsView {
 
         _timer.stop();
         _timer = null;
-        releaseLights();
-        _lightNetwork = null; // Release light network
+        release();
     }
 
     protected function getBackgroundColor() {

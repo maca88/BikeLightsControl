@@ -3,7 +3,28 @@ using Toybox.AntPlus;
 using Toybox.Graphics;
 using Toybox.Application.Properties as Properties;
 
-(:glance)
+(:glance :hasGlance :staticGlance)
+class BikeLightsGlanceView extends WatchUi.GlanceView {
+
+    function initialize() {
+        GlanceView.initialize();
+    }
+
+    function onUpdate(dc) {
+        var width = dc.getWidth();
+        var height = dc.getHeight();
+        dc.setColor(0xFFFFFF /* COLOR_WHITE */, -1 /* COLOR_TRANSPARENT */);
+        dc.drawText(width / 2, height / 2, 2, "Bike Lights", 1 /* TEXT_JUSTIFY_CENTER */ | 4 /* TEXT_JUSTIFY_VCENTER */);
+    }
+
+    function onSettingsChanged() {
+    }
+
+    function release() {
+    }
+}
+
+(:glance :hasGlance :liveGlance)
 class BikeLightsGlanceView extends WatchUi.GlanceView {
 
     // Fonts
@@ -14,6 +35,8 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     private var _lightNetworkListener;
     private var _networkState;
     private var _initializedLights = 0;
+    private var _individualNetwork;
+    private var _errorCode;
 
     // Pre-calculated positions
     private var _batteryY;
@@ -31,36 +54,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         _batteryFont = getFont(:batteryFont);
         _lightNetworkListener = new BikeLightNetworkListener(self);
 
-        setupNetwork();
-        parseConfiguration();
-    }
-
-    // <GlobalFilters>#<HeadlightModes>#<HeadlightFilters>#<TaillightModes>#<TaillightFilters>
-    private function parseConfiguration() {
-        var value = Properties.getValue("LC");
-        var indexResult = [0 /* next index */];
-        var headlightModes = parseLightModes(value, indexResult);
-        indexResult[0]++;
-        value = value.substring(indexResult[0], value.length() - 1);
-        var taillightModes = parseLightModes(value, indexResult);
-
-        _primaryLightData[2] = headlightModes != null ? headlightModes : taillightModes;
-        _secondaryLightData[2] = headlightModes != null ? taillightModes : null;
-    }
-
-    private function parseLightModes(value, indexResult) {
-        if (value == null || value.length() == 0) {
-            return null;
-        }
-
-        var index = value.find("#");
-        if (index == null) {
-            return null;
-        }
-
-        indexResult[0] = index + 1;
-        var chars = value.toCharArray();
-        return parseLong(chars, indexResult[0], indexResult);
+        onSettingsChanged();
     }
 
     function onLayout(dc) {
@@ -72,11 +66,19 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         _lightY = _batteryY - padding - 32 /* Lights font size */;
     }
 
+    function onShow() {
+        recreateLightNetwork();
+    }
+
+    function onHide() {
+        release();
+    }
+
     function onUpdate(dc) {
-        // NOTE: Use only for testing purposes when using TestLightNetwork
-        //if (_lightNetwork != null && _lightNetwork has :update) {
-        //    _lightNetwork.update();
-        //}
+        // Needed for TestLightNetwork and IndividualLightNetwork
+        if (_lightNetwork != null && _lightNetwork has :update) {
+            _errorCode = _lightNetwork.update();
+        }
 
         var width = dc.getWidth();
         var height = dc.getHeight();
@@ -91,6 +93,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     }
 
     function onNetworkStateUpdate(networkState) {
+        //System.println("onNetworkStateUpdate=" + networkState);
         if (_initializedLights > 0 && networkState != 2 /* LIGHT_NETWORK_STATE_FORMED */) {
             releaseLights();
             WatchUi.requestUpdate();
@@ -129,6 +132,18 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         WatchUi.requestUpdate();
     }
 
+    function onSettingsChanged() {
+        var configuration = parseConfiguration(Properties.getValue("LC"));
+        var headlightModes = configuration[0];
+        var taillightModes = configuration[1];
+        _primaryLightData[2] = headlightModes != null ? headlightModes : taillightModes;
+        _secondaryLightData[2] = headlightModes != null ? taillightModes : null;
+        _individualNetwork = configuration[2];
+        if (_lightNetwork != null && (_individualNetwork != null /* Is enabled */ || _lightNetwork instanceof AntLightNetwork.IndividualLightNetwork)) {
+            recreateLightNetwork();
+        }
+    }
+
     function updateLight(light, mode) {
         var lightType = light.type;
         if (_initializedLights == 0 || (lightType != 0 /* LIGHT_TYPE_HEADLIGHT */ && lightType != 2 /* LIGHT_TYPE_TAILLIGHT */)) {
@@ -141,6 +156,15 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         lightData[0] = light;
 
         WatchUi.requestUpdate();
+    }
+
+    function release() {
+        releaseLights();
+        if (_lightNetwork != null && _lightNetwork has :release) {
+            _lightNetwork.release();
+        }
+
+        _lightNetwork = null; // Release light network
     }
 
     private function draw(dc, width, height, fgColor, bgColor) {
@@ -239,6 +263,68 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
 
     private function getFont(key) {
         return WatchUi.loadResource(Rez.Fonts[key]);
+    }
+
+    // <GlobalFilters>#<HeadlightModes>#<HeadlightFilters>#<TaillightModes>#<TaillightFilters>
+    private function parseConfiguration(value) {
+        if (value == null || value.length() == 0) {
+            return new [3];
+        }
+
+        var indexResult = [0 /* next index */];
+        var chars = value.toCharArray();
+        return [
+            parseLightModes(chars, 0, indexResult),
+            parseLightModes(chars, indexResult[0], indexResult),
+            parseIndividualNetwork(chars, indexResult[0], indexResult),
+        ];
+    }
+
+    private function recreateLightNetwork() {
+        release();
+        _lightNetwork = _individualNetwork != null
+            ? new AntLightNetwork.IndividualLightNetwork(_individualNetwork[0], _individualNetwork[1], _lightNetworkListener)
+            : new AntPlus.LightNetwork(_lightNetworkListener);
+    }
+
+    private function parseLightModes(chars, i, indexResult) {
+        if (i < 0 || chars[i] != '#') {
+            indexResult[0] = -1;
+            return null;
+        }
+
+        var result = parseLong(chars, i + 1, indexResult);
+        indexResult[0] = indexResult[0] + 1; // Skip filters
+        return result;
+    }
+
+    private function parseIndividualNetwork(chars, i, indexResult) {
+        if (i < 0 || chars[i] != '#') {
+            indexResult[0] = -1;
+            return null;
+        }
+
+        var toSkip = 3;
+        while (toSkip > 0 && i < chars.size()) {
+            if (chars[i] == '#') {
+                toSkip--;
+            }
+
+            i++;
+        }
+
+        if (toSkip > 0) {
+            return null;
+        }
+
+        if (parse(1 /* NUMBER */, chars, i, indexResult) != 1) {
+            return null;
+        }
+
+        return [
+            parse(1 /* NUMBER */, chars, indexResult[0] + 1, indexResult), // Headlight device number
+            parse(1 /* NUMBER */, chars, indexResult[0] + 1, indexResult)  // Taillight device number
+        ];
     }
 
     private function parseLong(chars, index, resultIndex) {

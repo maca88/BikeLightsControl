@@ -34,6 +34,7 @@ class BikeLightsControlApp extends Application.AppBase {
 
     // onStop() is called when your application is exiting
     function onStop(state) {
+        _view.release();
         _view = null;
     }
 
@@ -43,7 +44,6 @@ class BikeLightsControlApp extends Application.AppBase {
         }
 
         _view.onSettingsChanged();
-        _view.resetLights();
     }
 
     // Return the initial view of your application here
@@ -52,10 +52,15 @@ class BikeLightsControlApp extends Application.AppBase {
             _view = new BikeLightsControlView();
         }
 
-        return [ _view, new BikeLightsControlInputDelegate(_view) ];
+        return [_view, new BikeLightsControlInputDelegate(_view)];
     }
 
+    (:hasGlance)
     function getGlanceView() {
-        return [ new BikeLightsGlanceView() ];
+        if (_view == null) {
+            _view = new BikeLightsGlanceView();
+        }
+
+        return [_view];
     }
 }
