@@ -1,7 +1,7 @@
 Bike Lights Control
 ===============
 
-Bike Lights Control is a [widget](https://developer.garmin.com/connect-iq/connect-iq-basics/widgets/) IQ Connect application for Garmin devices, that allows to manually control ANT+ lights.
+Bike Lights Control is a [widget](https://developer.garmin.com/connect-iq/connect-iq-basics/app-types/#widgets) IQ Connect application for Garmin devices, that allows to manually control ANT+ lights.
 
 | Light Panel | Lights Menu | Light Menu |
 | :---------: | :---------: | :--------: |
