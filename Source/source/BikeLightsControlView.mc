@@ -83,8 +83,8 @@ class BikeLightsControlView extends BikeLightsView {
                 ? new Settings.LightsMenu(self, menuContext)
                 : new LegacySettings.LightsMenu(self, menuContext)
             : WatchUi has :Menu2
-                ? new Settings.LightMenu(headlightData[0].type, self, menuContext)
-                : new LegacySettings.LightMenu(headlightData[0].type, self, menuContext);
+                ? new Settings.LightMenu(getLightData(null)[0].type, self, menuContext)
+                : new LegacySettings.LightMenu(getLightData(null)[0].type, self, menuContext);
         var delegate = WatchUi has :Menu2
             ? new Settings.MenuDelegate(menu)
             : new LegacySettings.MenuDelegate(menu);
@@ -130,7 +130,7 @@ class BikeLightsControlView extends BikeLightsView {
 
         var size = _initializedLights;
         for (var i = 0; i < size; i++) {
-            var lightData = getLightData(i, null);
+            var lightData = getLightData(size == 1 ? null : i * 2);
             if (lightData[7] != null) {
                 if (lightData[9] <= 0) {
                     lightData[7] = null;
@@ -242,7 +242,6 @@ class BikeLightsControlView extends BikeLightsView {
         var settings = WatchUi.loadResource(Rez.JsonData.Settings);
         _separatorWidth = settings[0];
         _titleFont = settings[1];
-        _titleTopPadding = settings[2];
         _offsetX = 0;
         if (self has :_fieldWidth) {
             _fieldWidth = width;
@@ -251,7 +250,7 @@ class BikeLightsControlView extends BikeLightsView {
 
         _batteryY = (height / 2) + 19 - padding;
         _lightY = _batteryY - padding - 32 /* Lights font size */;
-        _titleY = _lightY - dc.getFontHeight(_titleFont) - _titleTopPadding;
+        _titleY = _lightY - dc.getFontHeight(_titleFont) - settings[2];
     }
 
     protected function drawLight(lightData, position, dc, width, fgColor, bgColor) {

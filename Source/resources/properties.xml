@@ -1,7 +1,10 @@
 <resources>
     <properties>
         <!-- Configuration -->
+        <property id="CC" type="number">1</property>
         <property id="LC" type="string"></property>
+        <property id="LC2" type="string"></property>
+        <property id="LC3" type="string"></property>
 
         <!-- Activity color -->
         <property id="AC" type="number">43775</property>

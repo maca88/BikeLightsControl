@@ -106,6 +106,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         }
 
         var totalLights = lights.size();
+        var initializedLights = 0;
         for (var i = 0; i < totalLights; i++) {
             var light = lights[i];
             if (light == null) {
@@ -121,19 +122,24 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
                 ? _primaryLightData
                 : _secondaryLightData;
             if (lightData[0] != null) {
-                return;
+                continue;
             }
 
             lightData[0] = light;
             updateLightTextAndMode(lightData, light.mode);
+            initializedLights++;
         }
 
-        _initializedLights = totalLights;
+        _initializedLights = initializedLights;
         WatchUi.requestUpdate();
     }
 
     function onSettingsChanged() {
-        var configuration = parseConfiguration(Properties.getValue("LC"));
+        var currentConfig = Properties.getValue("CC");
+        var configKey = currentConfig != null && currentConfig > 1
+            ? "LC" + currentConfig
+            : "LC";
+        var configuration = parseConfiguration(Properties.getValue(configKey));
         var headlightModes = configuration[0];
         var taillightModes = configuration[1];
         _primaryLightData[2] = headlightModes != null ? headlightModes : taillightModes;
@@ -153,6 +159,11 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         var lightData = _initializedLights == 1 || lightType == 0 /* LIGHT_TYPE_HEADLIGHT */
             ? _primaryLightData
             : _secondaryLightData;
+        var oldLight = lightData[0];
+        if (oldLight == null || oldLight.identifier != light.identifier) {
+            return;
+        }
+
         lightData[0] = light;
 
         WatchUi.requestUpdate();
@@ -251,16 +262,6 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
             : lightModeCharacter == null ? "<" : "<" + lightModeCharacter;
     }
 
-    (:testNetwork)
-    private function setupNetwork() {
-        _lightNetwork = new TestNetwork.TestLightNetwork(_lightNetworkListener);
-    }
-
-    (:deviceNetwork)
-    private function setupNetwork() {
-        _lightNetwork = new AntPlus.LightNetwork(_lightNetworkListener);
-    }
-
     private function getFont(key) {
         return WatchUi.loadResource(Rez.Fonts[key]);
     }
@@ -280,11 +281,20 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         ];
     }
 
+    (:deviceNetwork)
     private function recreateLightNetwork() {
         release();
         _lightNetwork = _individualNetwork != null
             ? new AntLightNetwork.IndividualLightNetwork(_individualNetwork[0], _individualNetwork[1], _lightNetworkListener)
             : new AntPlus.LightNetwork(_lightNetworkListener);
+    }
+
+    (:testNetwork)
+    private function recreateLightNetwork() {
+        release();
+        _lightNetwork = _individualNetwork != null
+            ? new AntLightNetwork.IndividualLightNetwork(_individualNetwork[0], _individualNetwork[1], _lightNetworkListener)
+            : new TestNetwork.TestLightNetwork(_lightNetworkListener);
     }
 
     private function parseLightModes(chars, i, indexResult) {

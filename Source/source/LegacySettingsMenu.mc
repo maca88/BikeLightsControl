@@ -32,13 +32,6 @@ module LegacySettings {
         :Custom1
     ];
 
-    function getLightData(lightType, view) {
-        var headlight = view.headlightData[0];
-        return headlight == null ? null // The network was disconnected
-            : headlight.type == lightType ? view.headlightData
-            : view.taillightData;
-    }
-
     class BaseMenu extends WatchUi.Menu {
         protected var context;
         protected var viewRef;
@@ -55,7 +48,7 @@ module LegacySettings {
             var view = viewRef.get();
             return context[0] == view.headlightSettings &&
                 context[1] == view.taillightSettings &&
-                view.headlightData[0] != null; // The network was disconnected
+                view.getLightData(null)[0] != null; // The network was disconnected
         }
 
         function close() {
@@ -133,7 +126,7 @@ module LegacySettings {
 
         function onSelect(menuItem) {
             var view = viewRef.get();
-            var lightData = getLightData(_lightType, view);
+            var lightData = view.getLightData(_lightType);
             var oldControlMode = lightData[4];
             var controlMode = controlModeSymbols.indexOf(menuItem);
             if (controlMode < 0 || oldControlMode == controlMode) {
@@ -164,7 +157,7 @@ module LegacySettings {
 
         function onSelect(menuItem) {
             var view = viewRef.get();
-            var lightData = getLightData(_lightType, view);
+            var lightData = view.getLightData(_lightType);
             var mode = lightModes.indexOf(menuItem);
             if (mode > 9) {
                 mode += 49;

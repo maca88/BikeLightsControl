@@ -11,6 +11,8 @@ Bike Lights Control is a [widget](https://developer.garmin.com/connect-iq/connec
 - Configurable full screen light panel for fast switching modes (only for Edge devices with a touch screen)
 - Switching modes by using a menu (only for devices without a touch screen)
 - Has an alternative light network implementation that can be used for lights with partial ANT+ support
+- Support multiple light configurations
+- Support controlling multiple headlights/taillights at once
 
 ## How to use
 
@@ -40,12 +42,16 @@ Bike Lights Control is a [widget](https://developer.garmin.com/connect-iq/connec
 - Bontrager Ion 200 RT
 - Bontrager Flare RT
 - Garmin Varia RTL500
+- Garmin Varia RTL501
 - Garmin Varia RTL510
 - Garmin Varia RTL515
+- Garmin Varia RTL516
 - Garmin Varia HL500
 - Garmin Varia UT800
+- Giant Recon HL1800
 - Cycliq Fly12 CE (supported only by using Individual Light Network)
 - Cycliq Fly6 CE (supported only by using Individual Light Network)
+- See.Sense ACE Front/Rear (supported only by using Individual Light Network)
 - See.Sense BEAM/BEAM+ (supported only by using Individual Light Network)
 - See.Sense ICON2 (supported only by using Individual Light Network)
 
@@ -56,8 +62,8 @@ Bike Lights Control is a [widget](https://developer.garmin.com/connect-iq/connec
 The following errors can be displayed:
 - **Error 1:** A not supported light type is connected, only headlights and taillights are supported.
 - **Error 2:** Two or more lights of the same type are connected to the network, which is not supported.
-- **Error 3:** Configuration value is invalid.
-- **Error 4:** Light panel contains a light mode that the connected light does not support.
+- **Error 3:** Light panel contains a light mode that the connected light does not support.
+- **Error 4:** Configuration value is invalid.
 - **Error 5:** The device does not have enough free ANT channels to be used by the Individual Light Network. Try to disable some sensors from the Garmin Sensors menu.
 - **Error 6:** One of the ANT channels used by the Individual Light Network could not be opened. Make sure that the lights are removed/disabled from the Garmin Sensors menu.
 - **Error 7:** The light with the provided device number does not support the configured light type (headlight/taillight). Make sure that the "Device number" setting on the configured light is not of another light.
