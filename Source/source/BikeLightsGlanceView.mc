@@ -93,6 +93,11 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     }
 
     function onNetworkStateUpdate(networkState) {
+        // Seems like this method can be called after the view was released
+        if (_lightNetwork == null) {
+            return;
+        }
+
         //System.println("onNetworkStateUpdate=" + networkState);
         if (_initializedLights > 0 && networkState != 2 /* LIGHT_NETWORK_STATE_FORMED */) {
             releaseLights();
