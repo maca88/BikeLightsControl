@@ -1,8 +1,7 @@
 project.manifest = manifest.xml
-#excludeBase=deviceNetwork;lowMemory;dataField;monochromeScreen
-excludeBase=testNetwork;lowMemory;dataField;monochromeScreen
+excludeBase=lowMemory;dataField;monochromeScreen
 
-base.sourcePath = source;SmartBikeLights/Source/SmartBikeLights/source-common
+base.sourcePath = source;SmartBikeLights/Source/SmartBikeLights/source-common;source-generated
 
 nonTouchScreen = $(excludeBase);touchScreen;noLightButtons
 rectangleNonTouchScreen = $(nonTouchScreen);round;hasGlance

@@ -266,22 +266,9 @@ class BikeLightsControlView extends BikeLightsView {
             dc.drawText(lightX, _titleY, _titleFont, title, 1 /* TEXT_JUSTIFY_CENTER */);
         }
 
-        dc.drawText(lightX + (direction * (_batteryWidth / 2)) + lightXOffset, _lightY, _lightsFont, lightData[1], justification);
+        dc.drawText(lightX + (direction * (49 /*_batteryWidth*/ / 2)) + lightXOffset, _lightY, _lightsFont, lightData[1], justification);
         dc.drawText(lightX + (direction * 8), _lightY + 11, _controlModeFont, $.controlModes[lightData[4]], 1 /* TEXT_JUSTIFY_CENTER */);
         drawBattery(dc, fgColor, lightX, _batteryY, batteryStatus);
-    }
-
-    // Do not set any mode
-    protected function setInitialLightMode(lightData, lightMode, controlMode) {
-        if (controlMode == 1 /* NETWORK */) {
-            lightData[5] = _networkMode != null && _networkMode < $.networkModes.size()
-                ? $.networkModes[_networkMode]
-                : null;
-        }
-    }
-
-    protected function getInitialLightMode(light, controlMode) {
-        return light.mode;
     }
 
     (:touchScreen)

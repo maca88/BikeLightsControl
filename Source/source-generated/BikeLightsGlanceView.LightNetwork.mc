@@ -286,20 +286,11 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         ];
     }
 
-    (:deviceNetwork)
     private function recreateLightNetwork() {
         release();
         _lightNetwork = _individualNetwork != null
             ? new AntLightNetwork.IndividualLightNetwork(_individualNetwork[0], _individualNetwork[1], _lightNetworkListener)
             : new AntPlus.LightNetwork(_lightNetworkListener);
-    }
-
-    (:testNetwork)
-    private function recreateLightNetwork() {
-        release();
-        _lightNetwork = _individualNetwork != null
-            ? new AntLightNetwork.IndividualLightNetwork(_individualNetwork[0], _individualNetwork[1], _lightNetworkListener)
-            : new TestNetwork.TestLightNetwork(_lightNetworkListener);
     }
 
     private function parseLightModes(chars, i, indexResult) {
