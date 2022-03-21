@@ -4,11 +4,12 @@ excludeBase=lowMemory;dataField;monochromeScreen
 base.sourcePath = source;SmartBikeLights/Source/SmartBikeLights/source-common;source-generated
 
 nonTouchScreen = $(excludeBase);touchScreen;noLightButtons
-rectangleNonTouchScreen = $(nonTouchScreen);round;hasGlance
-roundNonTouchScreen = $(nonTouchScreen);rectangle
+rectangleNonTouchScreen = $(nonTouchScreen);round;hasGlance;highResolution
+roundNonTouchScreen = $(nonTouchScreen);rectangle;highResolution
+roundHighResolution = $(nonTouchScreen);rectangle;mediumResolution
 
 # maps default
-rectangle.excludeAnnotations = $(excludeBase);nonTouchScreen;noLightButtons;round;settings;hasGlance
+rectangle.excludeAnnotations = $(excludeBase);nonTouchScreen;noLightButtons;round;settings;hasGlance;highResolution
 round.excludeAnnotations = $(roundNonTouchScreen);hasGlance
 semiround.excludeAnnotations = $(roundNonTouchScreen);hasGlance
 base.excludeAnnotations = $(rectangle.excludeAnnotations)
@@ -19,18 +20,34 @@ edge520plus.excludeAnnotations = $(rectangleNonTouchScreen)
 venusq.excludeAnnotations = $(rectangleNonTouchScreen)
 venusqm.excludeAnnotations = $(rectangleNonTouchScreen)
 
+# High resolution watches without glance
+d2air.excludeAnnotations = $(roundHighResolution);hasGlance
+venu.excludeAnnotations = $(roundHighResolution);hasGlance
+venud.excludeAnnotations = $(roundHighResolution);hasGlance
+
 # Live glance (https://support.garmin.com/en-US/?faq=Eg6DSXgpma697JGZZnhYc6)
+d2airx10.excludeAnnotations = $(roundHighResolution);staticGlance
 descentmk2.excludeAnnotations = $(roundNonTouchScreen);staticGlance
+descentmk2s.excludeAnnotations = $(roundNonTouchScreen);staticGlance
+enduro.excludeAnnotations = $(roundNonTouchScreen);staticGlance
+epix2.excludeAnnotations = $(roundHighResolution);staticGlance
 fenix6pro.excludeAnnotations = $(roundNonTouchScreen);staticGlance
 fenix6spro.excludeAnnotations = $(roundNonTouchScreen);staticGlance
 fenix6xpro.excludeAnnotations = $(roundNonTouchScreen);staticGlance
+fenix7x.excludeAnnotations = $(roundNonTouchScreen);staticGlance
 fr245m.excludeAnnotations = $(roundNonTouchScreen);staticGlance
 fr745.excludeAnnotations = $(roundNonTouchScreen);staticGlance
 fr945.excludeAnnotations = $(roundNonTouchScreen);staticGlance
+fr945lte.excludeAnnotations = $(roundNonTouchScreen);staticGlance
+venu2.excludeAnnotations = $(roundHighResolution);staticGlance
+venu2plus.excludeAnnotations = $(roundHighResolution);staticGlance
+venu2s.excludeAnnotations = $(roundHighResolution);staticGlance
 
 # Static glance
 fenix6.excludeAnnotations = $(roundNonTouchScreen);liveGlance
 fenix6s.excludeAnnotations = $(roundNonTouchScreen);liveGlance
+fenix7.excludeAnnotations = $(roundNonTouchScreen);liveGlance
+fenix7s.excludeAnnotations = $(roundNonTouchScreen);liveGlance
 fr245.excludeAnnotations = $(roundNonTouchScreen);liveGlance
 marqadventurer.excludeAnnotations = $(roundNonTouchScreen);liveGlance
 marqathlete.excludeAnnotations = $(roundNonTouchScreen);liveGlance

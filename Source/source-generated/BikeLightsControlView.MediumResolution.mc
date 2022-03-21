@@ -4,6 +4,7 @@ using Toybox.Position;
 using Toybox.Time.Gregorian;
 using Toybox.Application.Properties as Properties;
 
+(:mediumResolution)
 class BikeLightsControlInputDelegate extends WatchUi.InputDelegate {
 
     private var _eventHandler;
@@ -44,6 +45,7 @@ class BikeLightsControlInputDelegate extends WatchUi.InputDelegate {
     }
 }
 
+(:mediumResolution)
 class BikeLightsControlView extends BikeLightsView {
 
     private var _updateUiCounter = 0;
@@ -248,8 +250,10 @@ class BikeLightsControlView extends BikeLightsView {
             _isFullScreen = true;
         }
 
-        _batteryY = (height / 2) + 19 - padding;
-        _lightY = _batteryY - padding - 32 /* Lights font size */;
+        var batteryHeight = 18;
+        var lightHeight = 32;
+        _batteryY = (height / 2) + batteryHeight - padding;
+        _lightY = _batteryY - padding - lightHeight;
         _titleY = _lightY - dc.getFontHeight(_titleFont) - settings[2];
     }
 
@@ -266,7 +270,7 @@ class BikeLightsControlView extends BikeLightsView {
             dc.drawText(lightX, _titleY, _titleFont, title, 1 /* TEXT_JUSTIFY_CENTER */);
         }
 
-        dc.drawText(lightX + (direction * (49 /*_batteryWidth*/ / 2)) + lightXOffset, _lightY, _lightsFont, lightData[1], justification);
+        dc.drawText(lightX + (direction * (49 /* _batteryWidth */ / 2)) + lightXOffset, _lightY, _lightsFont, lightData[1], justification);
         dc.drawText(lightX + (direction * 8), _lightY + 11, _controlModeFont, $.controlModes[lightData[4]], 1 /* TEXT_JUSTIFY_CENTER */);
         drawBattery(dc, fgColor, lightX, _batteryY, batteryStatus);
     }

@@ -12,7 +12,7 @@ using Toybox.Time;
 using Toybox.Time.Gregorian;
 using Toybox.Application.Properties as Properties;
 
-(:round :nonTouchScreen)
+(:round :nonTouchScreen :mediumResolution)
 const lightModeCharacters = [
     "S", /* High steady beam */
     "M", /* Medium steady beam */
@@ -22,14 +22,14 @@ const lightModeCharacters = [
     "f"  /* Low flash */
 ];
 
-(:round :nonTouchScreen)
+(:round :nonTouchScreen :mediumResolution)
 const controlModes = [
     "S", /* SMART */
     "N", /* NETWORK */
     "M"  /* MANUAL */
 ];
 
-(:round :nonTouchScreen)
+(:round :nonTouchScreen :mediumResolution)
 const networkModes = [
     "INDV", /* LIGHT_NETWORK_MODE_INDIVIDUAL */
     "AUTO", /* LIGHT_NETWORK_MODE_AUTO */
@@ -37,7 +37,7 @@ const networkModes = [
     "TRAIL"
 ];
 
-(:round :nonTouchScreen)
+(:round :nonTouchScreen :mediumResolution)
 class BikeLightsView extends  WatchUi.View  {
 
     // Fonts
@@ -62,19 +62,22 @@ class BikeLightsView extends  WatchUi.View  {
     // 7. Next light mode
     // 8. Next title
     // 9. Compute setMode timeout
-    // 10. Minimum active filter group time in seconds
-    // 11. Serial number
-    // 12. Filters
-    // 13. Force Smart mode (high memory devices only)
+    // 10. Current filter group index
+    // 11. Current filter group deactivation delay
+    // 12. Next filter group index
+    // 13. Next filter group activation delay
+    // 14. Serial number
+    // 15. Filters
+    // 16. Force Smart mode (high memory devices only)
     (:highMemory)
-    var headlightData = new [14];
+    var headlightData = new [17];
     (:highMemory)
-    var taillightData = new [14];
+    var taillightData = new [17];
 
     (:lowMemory)
-    var headlightData = new [13];
+    var headlightData = new [16];
     (:lowMemory)
-    var taillightData = new [13];
+    var taillightData = new [16];
 
     protected var _errorCode;
 
@@ -122,8 +125,12 @@ class BikeLightsView extends  WatchUi.View  {
     private var _lastUpdateTime = 0;
     private var _lastOnShowCallTime = 0;
 
-    // Used as an out parameter for getting the group filter title
-    private var _filterResult = [null /* Title */, 0 /* Filter timeout */];
+    // Used as an out parameter for getting the group filter data
+    // 0. Filter group title
+    // 1. Filter group index
+    // 2. Filter group activation time
+    // 3. Filter group deactivation time
+    private var _filterResult = new [4];
 
     function initialize() {
         View.initialize();
@@ -151,17 +158,17 @@ class BikeLightsView extends  WatchUi.View  {
             var tlData = taillightData;
             // Free memory before parsing to avoid out of memory exception
             _globalFilters = null;
-            hlData[12] = null; // Headlight filters
-            tlData[12] = null; // Taillight filters
+            hlData[15] = null; // Headlight filters
+            tlData[15] = null; // Taillight filters
             var configuration = parseConfiguration();
             _globalFilters = configuration[0];
-            hlData[12] = configuration[3]; // Headlight filters
-            tlData[12] = configuration[6]; // Taillight filters
+            hlData[15] = configuration[3]; // Headlight filters
+            tlData[15] = configuration[6]; // Taillight filters
             setupLightButtons(configuration);
             hlData[3] = configuration[1];  // Headlight modes
-            hlData[11] = configuration[2]; // Serial number
+            hlData[14] = configuration[2]; // Serial number
             tlData[3] = configuration[4];  // Taillight modes
-            tlData[11] = configuration[5]; // Serial number
+            tlData[14] = configuration[5]; // Serial number
             initializeLights(null);
         } catch (e) {
             _errorCode = 4;
@@ -247,38 +254,54 @@ class BikeLightsView extends  WatchUi.View  {
             }
 
             if (lightData[4] != 0 /* SMART */ || lightData[2] < 0 /* Disconnected */) {
-                lightData[10] = null;
+                lightData[10] = null; // Reset current filter group index
+                lightData[11] = null; // Reset current filter group deactivation delay
+                lightData[12] = null; // Reset next filter group index
                 continue;
             }
 
-            var filterTimer = lightData[10];
-            if (filterTimer != null && filterTimer > 1) {
-                lightData[10]--;
-                continue;
-            }
-
-            filterResult[0] = null;
             // Calculate global filters only once and only when one of the lights is in smart mode
-            globalFilterResult = globalFilterResult == null
-                ? checkFilters(activityInfo, _globalFilters, filterResult, null)
-                : globalFilterResult;
-            if (globalFilterResult == 0) {
-                setLightMode(lightData, 0, null, false);
-                continue;
-            }
-
-            if (globalFilterTitle == null) {
+            if (globalFilterResult == null) {
+                globalFilterResult = checkFilters(activityInfo, _globalFilters, filterResult, null, 0 /* Start index */);
                 globalFilterTitle = filterResult[0];
             }
 
-            var light = lightData[0];
-            var lightMode = checkFilters(
-                activityInfo,
-                lightData[12], /* Filters */
-                filterResult,
-                lightData);
+            var lightFilters = lightData[15];
+            var lightMode = globalFilterResult == 0
+                ? 0 /* OFF */
+                : checkFilters(activityInfo, lightFilters, filterResult, lightData, 0 /* Start index */);
+            var nextFilterGroupIndex = filterResult[1];
+            if (lightData[10] /* Current filter group */ != nextFilterGroupIndex) {
+                // If the next filter group is different that the current one, then:
+                // - update the deactivation delay for the current filter
+                // - update the activation delay for the next filter
+                var deactivationTime = lightData[11]; /* Current filter group deactivation delay */
+                if (deactivationTime != null && deactivationTime > 0) {
+                    lightData[11]--; // Update the deactivation delay
+                    continue;
+                }
+
+                if (nextFilterGroupIndex != null && lightData[12] /* Next filter group */ == nextFilterGroupIndex) {
+                    lightData[13]--; // Next filter group activation delay
+                } else {
+                    lightData[12] = nextFilterGroupIndex; // Next filter group
+                    lightData[13] = filterResult[2]; // Next filter group activation delay
+                }
+
+                var activationTime = lightData[13]; /* Next filter group activation delay */
+                if (activationTime != null && activationTime > 0) {
+                    // If the activation delay has not been reached, find the next active group that has zero activation delay
+                    lightMode = checkFilters(activityInfo, lightFilters, filterResult, lightData, nextFilterGroupIndex /* Start index */);
+                }
+            } else {
+                // If the next filter is the same as the current one, reset the next filter group index
+                // in order to restart the activation delay timing
+                lightData[12] = null;
+            }
+
             var title = filterResult[0] != null ? filterResult[0] : globalFilterTitle;
-            lightData[10] = filterResult[1];
+            lightData[10] = filterResult[1]; // Update current filter group index
+            lightData[11] = filterResult[3]; // Reset the deactivation delay in case it became active again before being deactivated
             setLightMode(lightData, lightMode, title, false);
         }
 
@@ -541,9 +564,8 @@ class BikeLightsView extends  WatchUi.View  {
         var titleTopPadding = settings[2];
         var titleHeight = dc.getFontHeight(_titleFont) + titleTopPadding;
         var lightHeight = height < 55 ? 35 : 55;
-        var totalHeight = lightHeight + titleHeight;
         var includeTitle = height > 90 && width > 150;
-        totalHeight = includeTitle ? totalHeight : lightHeight;
+        var totalHeight = includeTitle ? lightHeight + titleHeight : lightHeight;
         var startY = (12800 >> flags) & 0x01 == 1 ? 2 /* From top */
             : (200 >> flags) & 0x01 == 1 ? height - totalHeight /* From bottom */
             : (height - totalHeight) / 2; /* From center */
@@ -573,7 +595,7 @@ class BikeLightsView extends  WatchUi.View  {
 
         var recordLightModes = getPropertyValue("RL");
         var initializedLights = 0;
-        var hasSerialNumber = headlightData[11] != null || taillightData[11] != null;
+        var hasSerialNumber = headlightData[14] != null || taillightData[14] != null;
         for (var i = 0; i < lights.size(); i++) {
             var light = lights[i];
             var lightType = light != null ? light.type : 7;
@@ -583,7 +605,7 @@ class BikeLightsView extends  WatchUi.View  {
             }
 
             var lightData = getLightData(lightType);
-            var serial = lightData[11];
+            var serial = lightData[14];
             if ((hasSerialNumber && lightData[3] == null) ||
                 (hasSerialNumber && serial != null && serial != lightNetwork.getProductInfo(light.identifier).serial)) {
                 continue;
@@ -594,7 +616,7 @@ class BikeLightsView extends  WatchUi.View  {
                 initializedLights--;
             }
 
-            var filters = lightData[12];
+            var filters = lightData[15];
             var capableModes = getLightModes(light);
             // Validate filters light modes
             if (filters != null) {
@@ -606,7 +628,7 @@ class BikeLightsView extends  WatchUi.View  {
                         break;
                     }
 
-                    j = j + 4 + (totalFilters * 3);
+                    j = j + 5 + (totalFilters * 3);
                 }
             }
 
@@ -749,7 +771,7 @@ class BikeLightsView extends  WatchUi.View  {
     protected function onExternalLightModeChange(lightData, mode) {
         //System.println("onExternalLightModeChange mode=" + mode + " lightType=" + lightData[0].type  + " timer=" + System.getTimer());
         var controlMode = lightData[4];
-        if (controlMode == 0 /* SMART */ && lightData[13] == true /* Force smart mode */) {
+        if (controlMode == 0 /* SMART */ && lightData[16] == true /* Force smart mode */) {
             return;
         }
 
@@ -968,8 +990,8 @@ class BikeLightsView extends  WatchUi.View  {
 
         var forceSmartMode = configuration[10];
         if (forceSmartMode != null) {
-            headlightData[13] = forceSmartMode[0] == 1;
-            taillightData[13] = forceSmartMode[1] == 1;
+            headlightData[16] = forceSmartMode[0] == 1;
+            taillightData[16] = forceSmartMode[1] == 1;
         }
     }
 
@@ -1251,7 +1273,7 @@ class BikeLightsView extends  WatchUi.View  {
                 : $.lightModeCharacters[index];
         }
 
-        return lightType == 0 /* LIGHT_TYPE_HEADLIGHT */ ? lightModeCharacter + ">" : "<" + lightModeCharacter;
+        return lightType == 0 /* LIGHT_TYPE_HEADLIGHT */ ? lightModeCharacter + ")" : "(" + lightModeCharacter;
     }
 
     (:settings)
@@ -1277,37 +1299,39 @@ class BikeLightsView extends  WatchUi.View  {
     }
 
     (:dataField)
-    private function checkFilters(activityInfo, filters, filterResult, lightData) {
-        if (filters == null) {
-            filterResult[0] = null;
-            filterResult[1] = null;
-            return lightData != null ? 0 : 1;
-        }
-
-        var i = 0;
+    private function checkFilters(activityInfo, filters, filterResult, lightData, i) {
         var nextGroupIndex = null;
         var lightMode = 1;
         var title = null;
-        var minActiveTime = null;
-        while (i < filters.size()) {
+        var deactivationTime = null;
+        var activationTime = null;
+        var hasFilters = filters != null;
+        var withZeroActivationTime = i > 0;
+        while (hasFilters && i < filters.size()) {
             var data = filters[i];
             if (nextGroupIndex == null) {
                 title = data;
                 var totalFilters = filters[i + 1];
                 if (lightData != null) {
                     lightMode = filters[i + 2];
-                    minActiveTime = filters[i + 3];
-                    i += 4;
+                    deactivationTime = filters[i + 3];
+                    activationTime = filters[i + 4];
+                    i += 5;
                 } else {
                     i += 2;
                 }
 
                 nextGroupIndex = i + (totalFilters * 3);
                 continue;
-            } else if (i >= nextGroupIndex) {
-                filterResult[0] = title;
-                filterResult[1] = minActiveTime;
-                return lightMode;
+            } else if (i >= nextGroupIndex) { // All group filters condition are met
+                // Skip to the next group in case we are searching for a filter group with zero activation time
+                if (withZeroActivationTime && activationTime != null && activationTime > 0) {
+                    i = nextGroupIndex;
+                    nextGroupIndex = null;
+                    continue;
+                }
+
+                break; // We found a match, break and return the result
             }
 
             var filterValue = filters[i + 2];
@@ -1335,15 +1359,18 @@ class BikeLightsView extends  WatchUi.View  {
             }
         }
 
+        filterResult[1] = nextGroupIndex; // Filter group index
         if (nextGroupIndex != null) {
-            filterResult[0] = title;
-            filterResult[1] = minActiveTime;
+            filterResult[0] = title; // Filter group title
+            filterResult[2] = activationTime; // Filter group activation time
+            filterResult[3] = deactivationTime; // Filter group deactivation time
             return lightMode;
         }
 
         filterResult[0] = null;
-        filterResult[1] = null;
-        return 0;
+        filterResult[2] = null;
+        filterResult[3] = null;
+        return hasFilters || lightData != null ? 0 : 1;
     }
 
     (:dataField)
@@ -1619,7 +1646,7 @@ class BikeLightsView extends  WatchUi.View  {
     }
 
     // <TotalFilters>,<TotalGroups>|[<FilterGroup>| ...]
-    // <FilterGroup> := <GroupName>:<FiltersNumber>(?:<LightMode>)(?:<MinActiveTime>)[<Filter>, ...]
+    // <FilterGroup> := <GroupName>:<FiltersNumber>(?:<LightMode>)(?:<DeactivationTime>)(?:<ActivationTime>)[<Filter>, ...]
     // <Filter> := <FilterType><FilterOperator><FilterValue>
     (:dataField)
     private function parseFilters(chars, i, lightMode, filterResult) {
@@ -1646,8 +1673,11 @@ class BikeLightsView extends  WatchUi.View  {
                 data.add(parse(1 /* NUMBER */, chars, null, filterResult)); // Number of filters in the group
                 if (lightMode) {
                     data.add(parse(1 /* NUMBER */, chars, null /* Skip : */, filterResult)); // The light mode id
-                    if (chars[filterResult[0]] == ':') { // For back compatibility
-                        data.add(parse(1 /* NUMBER */, chars, null /* Skip : */, filterResult)); // The min active filter time
+                    // Parse filter group deactivation and activation delay
+                    for (var j = 0; j < 2; j++) {
+                        data.add(chars[filterResult[0]] == ':' // For back compatibility
+	                        ? parse(1 /* NUMBER */, chars, null /* Skip : */, filterResult)
+	                        : 0);
                     }
                 }
 

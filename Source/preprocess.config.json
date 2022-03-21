@@ -11,31 +11,60 @@
     {
       "name": "TouchRectangle",
       "files": ["SmartBikeLights/Source/SmartBikeLights/source-preprocess/BikeLightsView.mc"],
-      "definedSymbols": ["rectangle", "touchScreen"],
+      "definedSymbols": ["rectangle", "touchScreen", "mediumResolution"],
       "includeSymbols": {
-        "TARGET": ":rectangle :touchScreen"
+        "TARGET": ":rectangle :touchScreen :mediumResolution"
       }
     },
     {
       "name": "Rectangle",
       "files": ["SmartBikeLights/Source/SmartBikeLights/source-preprocess/BikeLightsView.mc"],
-      "definedSymbols": ["rectangle", "nonTouchScreen"],
+      "definedSymbols": ["rectangle", "nonTouchScreen", "mediumResolution"],
       "includeSymbols": {
-        "TARGET": ":rectangle :nonTouchScreen"
+        "TARGET": ":rectangle :nonTouchScreen :mediumResolution"
       }
     },
     {
       "name": "Round",
       "files": ["SmartBikeLights/Source/SmartBikeLights/source-preprocess/BikeLightsView.mc"],
-      "definedSymbols": ["round", "nonTouchScreen"],
+      "definedSymbols": ["round", "nonTouchScreen", "mediumResolution"],
       "includeSymbols": {
-        "TARGET": ":round :nonTouchScreen"
+        "TARGET": ":round :nonTouchScreen :mediumResolution"
+      }
+    },
+    {
+      "name": "RoundHighResolution",
+      "files": ["SmartBikeLights/Source/SmartBikeLights/source-preprocess/BikeLightsView.mc"],
+      "definedSymbols": ["round", "nonTouchScreen", "highResolution"],
+      "includeSymbols": {
+        "TARGET": ":round :nonTouchScreen :highResolution"
+      }
+    },
+    {
+      "name": "HighResolution",
+      "files": [
+        "source-preprocess/BikeLightsGlanceView.mc",
+        "source-preprocess/BikeLightsControlView.mc"
+      ],
+      "definedSymbols": ["highResolution"],
+      "includeSymbols": {
+        "TARGET": ":highResolution"
+      }
+    },
+    {
+      "name": "MediumResolution",
+      "files": [
+        "source-preprocess/BikeLightsGlanceView.mc",
+        "source-preprocess/BikeLightsControlView.mc"
+      ],
+      "definedSymbols": ["mediumResolution"],
+      "includeSymbols": {
+        "TARGET": ":mediumResolution"
       }
     },
     {
       "name": "LightNetwork",
       "files": [
-        "source-preprocess/BikeLightsGlanceView.mc",
         "SmartBikeLights/Source/SmartBikeLights/source-preprocess/TestLightNetwork.mc"
       ]
     }

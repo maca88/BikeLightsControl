@@ -3,7 +3,7 @@ using Toybox.AntPlus;
 using Toybox.Graphics;
 using Toybox.Application.Properties as Properties;
 
-(:glance :hasGlance :staticGlance /* #include TARGET */)
+(:glance :hasGlance :staticGlance :mediumResolution)
 class BikeLightsGlanceView extends WatchUi.GlanceView {
 
     function initialize() {
@@ -24,7 +24,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     }
 }
 
-(:glance :hasGlance :liveGlance /* #include TARGET */)
+(:glance :hasGlance :liveGlance :mediumResolution)
 class BikeLightsGlanceView extends WatchUi.GlanceView {
 
     // Fonts
@@ -61,8 +61,8 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         var height = dc.getHeight();
         var padding = 3;
         _offsetX = -25;
-        var batteryHeight = /* #if highResolution */26/* #else */18/* #endif */;
-        var lightHeight = /* #if highResolution */49/* #else */32/* #endif */;
+        var batteryHeight = 18;
+        var lightHeight = 32;
         var totalHeight = batteryHeight + lightHeight + padding;
         var offsetY = (height - totalHeight) / 2;
         _batteryY = height - offsetY - batteryHeight;
@@ -200,12 +200,12 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         var justification = lightData[0].type;
         var direction = justification == 0 ? 1 : -1;
         var lightX = Math.round(width * 0.25f * position) + _offsetX;
-        lightX += _initializedLights == 2 ? (direction * ((width / 4) - /* #if highResolution */36/* #else */25/* #endif */)) : 0;
+        lightX += _initializedLights == 2 ? (direction * ((width / 4) - 25)) : 0;
         var batteryStatus = getLightBatteryStatus(lightData);
         var lightXOffset = justification == 0 ? -4 : 2;
 
         dc.setColor(fgColor, bgColor);
-        dc.drawText(lightX + (direction * (/* #if highResolution */68/* #else */49/* #endif */ /* _batteryWidth *// 2)) + lightXOffset, _lightY, _lightsFont, lightData[1], justification);
+        dc.drawText(lightX + (direction * (49 /* _batteryWidth *// 2)) + lightXOffset, _lightY, _lightsFont, lightData[1], justification);
         drawBattery(dc, fgColor, lightX, _batteryY, batteryStatus);
     }
 
@@ -291,7 +291,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         release();
         _lightNetwork = _individualNetwork != null
             ? new AntLightNetwork.IndividualLightNetwork(_individualNetwork[0], _individualNetwork[1], _lightNetworkListener)
-            : new /* #include ANT_NETWORK */(_lightNetworkListener);
+            : new AntPlus.LightNetwork(_lightNetworkListener);
     }
 
     private function parseLightModes(chars, i, indexResult) {

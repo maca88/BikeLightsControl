@@ -3,7 +3,7 @@ using Toybox.AntPlus;
 using Toybox.Graphics;
 using Toybox.Application.Properties as Properties;
 
-(:glance :hasGlance :staticGlance)
+(:glance :hasGlance :staticGlance :highResolution)
 class BikeLightsGlanceView extends WatchUi.GlanceView {
 
     function initialize() {
@@ -24,7 +24,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     }
 }
 
-(:glance :hasGlance :liveGlance)
+(:glance :hasGlance :liveGlance :highResolution)
 class BikeLightsGlanceView extends WatchUi.GlanceView {
 
     // Fonts
@@ -43,7 +43,6 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     private var _lightY;
     private var _offsetX;
     private var _fgColor = 0xFFFFFF /* COLOR_WHITE */;
-    private var _batteryWidth = 49;
 
     private var _primaryLightData = new [3];
     private var _secondaryLightData = new [3];
@@ -62,8 +61,12 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         var height = dc.getHeight();
         var padding = 3;
         _offsetX = -25;
-        _batteryY = height - 19 - padding;
-        _lightY = _batteryY - padding - 32 /* Lights font size */;
+        var batteryHeight = 26;
+        var lightHeight = 49;
+        var totalHeight = batteryHeight + lightHeight + padding;
+        var offsetY = (height - totalHeight) / 2;
+        _batteryY = height - offsetY - batteryHeight;
+        _lightY = _batteryY - padding - lightHeight;
     }
 
     function onShow() {
@@ -197,12 +200,12 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         var justification = lightData[0].type;
         var direction = justification == 0 ? 1 : -1;
         var lightX = Math.round(width * 0.25f * position) + _offsetX;
-        lightX += _initializedLights == 2 ? (direction * ((width / 4) - 25)) : 0;
+        lightX += _initializedLights == 2 ? (direction * ((width / 4) - 36)) : 0;
         var batteryStatus = getLightBatteryStatus(lightData);
         var lightXOffset = justification == 0 ? -4 : 2;
 
         dc.setColor(fgColor, bgColor);
-        dc.drawText(lightX + (direction * (_batteryWidth / 2)) + lightXOffset, _lightY, _lightsFont, lightData[1], justification);
+        dc.drawText(lightX + (direction * (68 /* _batteryWidth *// 2)) + lightXOffset, _lightY, _lightsFont, lightData[1], justification);
         drawBattery(dc, fgColor, lightX, _batteryY, batteryStatus);
     }
 
@@ -250,7 +253,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     }
 
     private function getLightText(lightType, mode, lightModes) {
-        var lightModeCharacter = null;
+        var lightModeCharacter = "";
         if (mode < 0) {
             lightModeCharacter = "X";
         } else if (mode > 0) {
@@ -262,9 +265,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
                 : $.lightModeCharacters[index];
         }
 
-        return lightType == 0 /* LIGHT_TYPE_HEADLIGHT */
-            ? lightModeCharacter == null ? ">" : lightModeCharacter + ">"
-            : lightModeCharacter == null ? "<" : "<" + lightModeCharacter;
+        return lightType == 0 /* LIGHT_TYPE_HEADLIGHT */ ? lightModeCharacter + ")" : "(" + lightModeCharacter;
     }
 
     private function getFont(key) {
