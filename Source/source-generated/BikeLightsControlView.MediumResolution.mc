@@ -249,6 +249,7 @@ class BikeLightsControlView extends BikeLightsView {
     }
 
     protected function preCalculate(dc, width, height) {
+        BikeLightsView.preCalculate(dc, width, height);
         var fonts = Rez.Fonts;
         _lightsFont = WatchUi.loadResource(fonts[:lightsFont]);
         _batteryFont = WatchUi.loadResource(fonts[:batteryFont]);

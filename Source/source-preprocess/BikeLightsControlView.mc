@@ -249,6 +249,7 @@ class BikeLightsControlView extends BikeLightsView {
     }
 
     protected function preCalculate(dc, width, height) {
+        BikeLightsView.preCalculate(dc, width, height);
         var fonts = Rez.Fonts;
         _lightsFont = WatchUi.loadResource(fonts[:lightsFont]);
         _batteryFont = WatchUi.loadResource(fonts[:batteryFont]);
@@ -258,11 +259,6 @@ class BikeLightsControlView extends BikeLightsView {
         _separatorWidth = settings[0];
         _titleFont = settings[1];
         _offsetX = 0;
-// #if touchScreen
-        _fieldWidth = width;
-        _isFullScreen = true;
-// #endif
-
         var batteryHeight = /* #if highResolution */26/* #else */18/* #endif */;
         var lightHeight = /* #if highResolution */49/* #else */32/* #endif */;
         _batteryY = (height / 2) + batteryHeight - padding;

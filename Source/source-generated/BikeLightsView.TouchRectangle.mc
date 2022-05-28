@@ -431,6 +431,8 @@ class BikeLightsView extends  WatchUi.View  {
     }
 
     protected function preCalculate(dc, width, height) {
+        _fieldWidth = width;
+        _isFullScreen = true;
     }
     protected function initializeLights(newNetworkMode) {
         //System.println("initializeLights=" + newNetworkMode + " timer=" + System.getTimer());
