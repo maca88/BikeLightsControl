@@ -46,6 +46,7 @@ Bike Lights Control is a [widget](https://developer.garmin.com/connect-iq/connec
 - Garmin Varia RTL510
 - Garmin Varia RTL515
 - Garmin Varia RTL516
+- Garmin Varia RCT715
 - Garmin Varia HL500
 - Garmin Varia UT800
 - Giant Recon HL1800
@@ -56,6 +57,37 @@ Bike Lights Control is a [widget](https://developer.garmin.com/connect-iq/connec
 - See.Sense ICON2 (supported only by using Individual Light Network)
 
 **NOTE:** In case your ANT+ light is not on the list, please check the following garmin thread: https://forums.garmin.com/developer/connect-iq/f/showcase/248492/data-field-smart-bike-lights
+
+## Individual Light Network
+
+Individal Light Network is an alternative light network implementation for connecting and controlling ANT+ lights. In comparison to the Garmin built-in light network, 
+this network does not form a light network when two lights are connected, but instead it establish a separate connection for every light. This mode needs 
+to be used for lights that have issues with the built-in light network (See Sense and Cycliq lights).
+
+**NOTE:** Lights in Garmin Sensors menu need to be disabled or removed in order to use this feature!
+
+Known limitations:
+- It requires to manually set the device numbers for the lights
+- It will not turn off the lights when the device goes to sleep
+- It uses one ANT channel per light
+
+## Control multiple lights of the same type
+
+There are two ways to control more than one light of the same type (e.g. two headlights):
+
+### Grouping them into one virtual light
+
+In case there is more than one taillight or headlight paired, the data field will automatically group all headlights or taillights into one virtual light, which will forward commands (e.g. light mode changes) to all grouped lights. For the battery level, it will display the lowest battery level of the grouped lights. When pairing different headlights or taillights (e.g. Varia 515 and Flare RT), the virtual light will display only light modes that both lights support, based on the light mode number. For example when grouping Varia 515 and Flare RT, the following light modes will be available:
+```
+0 - Off
+5 - Peloton for Varia 515 and Night Steady for Flare RT
+7 - Day Flash
+```
+even if they both supports "Night Flash" mode, it will not be displayed, because Flare RT uses 63 and Varia 6 for the light mode number.
+
+### Installing [Bike Lights Control #2](https://apps.garmin.com/en-US/apps/910e3f6c-24ba-4d11-94b7-96e12ee4d568) widget
+
+`Bike Lights Control #2` widget is a copy of the original widget, which can be used along with the original one and configured separately. By using both widgets, it is possible to configure two lights of the same type (e.g. two headlights), one configured in the original widget and the other in the copy widget. When creating the configuration for the lights, it is required to set the `Serial number` input in [Lights Configurator](https://maca88.github.io/BikeLightsControl/), so that the data field will know which of the two lights to control.
 
 ## Error codes
 
