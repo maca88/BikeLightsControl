@@ -75,11 +75,20 @@ class BikeLightsControlView extends BikeLightsView {
 
     (:settings)
     function openMenu() {
-        if (_insideMenu || _errorCode != null || _initializedLights == 0 || !initializeSettings()) {
+        if (_insideMenu ||
+            _errorCode != null ||
+            _initializedLights == 0 ||
+            !validateSettingsLightModes(headlightData[0]) ||
+            !validateSettingsLightModes(taillightData[0])) {
             return false;
         }
 
-        var menuContext = [headlightSettings, taillightSettings];
+        var menuContext = [
+            headlightSettings,
+            taillightSettings,
+            getLightSettings(0 /* LIGHT_TYPE_HEADLIGHT */),
+            getLightSettings(2 /* LIGHT_TYPE_TAILLIGHT */)
+        ];
         var menu = _initializedLights > 1
             ? WatchUi has :Menu2
                 ? new Settings.LightsMenu(self, menuContext)
@@ -236,20 +245,19 @@ class BikeLightsControlView extends BikeLightsView {
     }
 
     protected function getPropertyValue(key) {
-        return key.equals("RL") || key.equals("CMO") ? false : Properties.getValue(key);
+        return key.equals("RL") || key.equals("IL") ? false : Properties.getValue(key);
     }
 
     protected function preCalculate(dc, width, height) {
+        var fonts = Rez.Fonts;
+        _lightsFont = WatchUi.loadResource(fonts[:lightsFont]);
+        _batteryFont = WatchUi.loadResource(fonts[:batteryFont]);
+        _controlModeFont = WatchUi.loadResource(fonts[:controlModeFont]);
         var padding = 3;
         var settings = WatchUi.loadResource(Rez.JsonData.Settings);
         _separatorWidth = settings[0];
         _titleFont = settings[1];
         _offsetX = 0;
-        if (self has :_fieldWidth) {
-            _fieldWidth = width;
-            _isFullScreen = true;
-        }
-
         var batteryHeight = 18;
         var lightHeight = 32;
         _batteryY = (height / 2) + batteryHeight - padding;

@@ -46,8 +46,8 @@ module LegacySettings {
 
         function isContextValid() {
             var view = viewRef.get();
-            return context[0] == view.headlightSettings &&
-                context[1] == view.taillightSettings &&
+            return context[0] == view.headlightSettings && // Check for settings change
+                context[1] == view.taillightSettings && // Check for settings change
                 view.getLightData(null)[0] != null; // The network was disconnected
         }
 
@@ -76,8 +76,8 @@ module LegacySettings {
         function initialize(view, context) {
             BaseMenu.initialize(view, context);
             setTitle("Lights");
-            addItem(view.headlightSettings[0], :Headlight);
-            addItem(view.taillightSettings[0], :Taillight);
+            addItem(context[2][0], :Headlight);
+            addItem(context[3][0], :Taillight);
         }
 
         function onSelect(menuItem) {
@@ -93,7 +93,7 @@ module LegacySettings {
 
         function initialize(lightType, view, context) {
             BaseMenu.initialize(view, context);
-            setTitle(lightType == 0 /* LIGHT_TYPE_HEADLIGHT */ ? view.headlightSettings[0] : view.taillightSettings[0]);
+            setTitle(lightType == 0 /* LIGHT_TYPE_HEADLIGHT */ ? context[2][0] : context[3][0]);
             addItem("Control mode", :ControlMode);
             addItem("Light modes", :LightModes);
             _lightType = lightType;
@@ -115,9 +115,10 @@ module LegacySettings {
             BaseMenu.initialize(view, context);
             setTitle("Control mode");
             _lightType = lightType;
+            var lightData = view.getLightData(_lightType);
             for (var i = 0; i < controlModeNames.size(); i++) {
-                if (i == 0 && view has :updateUi) {
-                    continue; // Do not show smart mode for the widget
+                if (i == 0 && lightData[15] == null) {
+                    continue; // Do not show smart mode when there are no filters
                 }
 
                 addItem(controlModeNames[i], controlModeSymbols[i]);
@@ -147,7 +148,7 @@ module LegacySettings {
             BaseMenu.initialize(view, context);
             setTitle("Light modes");
             _lightType = lightType;
-            var lightSettings = lightType == 0 /* LIGHT_TYPE_HEADLIGHT */ ? view.headlightSettings : view.taillightSettings;
+            var lightSettings = lightType == 0 /* LIGHT_TYPE_HEADLIGHT */ ? context[2] : context[3];
             for (var i = 1; i < lightSettings.size(); i += 2) {
                 var mode = lightSettings[i + 1];
                 var symbol = lightModes[mode > 9 ? mode - 49 : mode];
