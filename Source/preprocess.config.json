@@ -41,6 +41,15 @@
       }
     },
     {
+      "name": "Settings",
+      "files": ["SmartBikeLights/Source/SmartBikeLights/source-preprocess/AppSettings.mc"],
+      "definedSymbols": ["settings"],
+      "includeSymbols": {
+        "TARGET": ":settings",
+        "UIMODULE": "WatchUi."
+      }
+    },
+    {
       "name": "HighResolution",
       "files": [
         "source-preprocess/BikeLightsGlanceView.mc",

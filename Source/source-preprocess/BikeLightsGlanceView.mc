@@ -37,6 +37,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     private var _initializedLights = 0;
     private var _individualNetwork;
     private var _errorCode;
+    private var _invertLights;
 
     // Pre-calculated positions
     private var _batteryY;
@@ -143,6 +144,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     }
 
     function onSettingsChanged() {
+        _invertLights = Properties.getValue("IL");
         var currentConfig = Properties.getValue("CC");
         var configKey = currentConfig != null && currentConfig > 1
             ? "LC" + currentConfig
@@ -198,6 +200,13 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
 
     private function drawLight(lightData, position, dc, width, fgColor, bgColor) {
         var justification = lightData[0].type;
+        if (_invertLights) {
+            justification = justification == 0 ? 2 : 0;
+            position = position == 1 ? 3
+              : position == 3 ? 1
+              : position;
+        }
+
         var direction = justification == 0 ? 1 : -1;
         var lightX = Math.round(width * 0.25f * position) + _offsetX;
         lightX += _initializedLights == 2 ? (direction * ((width / 4) - /* #if highResolution */36/* #else */25/* #endif */)) : 0;
@@ -265,7 +274,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
                 : $.lightModeCharacters[index];
         }
 
-        return lightType == 0 /* LIGHT_TYPE_HEADLIGHT */ ? lightModeCharacter + ")" : "(" + lightModeCharacter;
+        return lightType == (_invertLights ? 2 /* LIGHT_TYPE_TAILLIGHT */ : 0 /* LIGHT_TYPE_HEADLIGHT */) ? lightModeCharacter + ")" : "(" + lightModeCharacter;
     }
 
     private function getFont(key) {

@@ -293,29 +293,6 @@ class BikeLightsView extends  WatchUi.View  {
     }
 
     (:settings)
-    function getSettingsView() {
-        if (_errorCode != null ||
-            _initializedLights == 0 ||
-            !validateSettingsLightModes(headlightData[0]) ||
-            !validateSettingsLightModes(taillightData[0]) ||
-            !(WatchUi has :Menu2)) {
-            return null;
-        }
-
-        var menuContext = [
-            headlightSettings,
-            taillightSettings,
-            getLightSettings(0 /* LIGHT_TYPE_HEADLIGHT */),
-            getLightSettings(2 /* LIGHT_TYPE_TAILLIGHT */)
-        ];
-        var menu = _initializedLights > 1
-            ? new Settings.LightsMenu(self, menuContext)
-            : new Settings.LightMenu(getLightData(null)[0].type, self, menuContext);
-
-        return [menu, new Settings.MenuDelegate(menu)];
-    }
-
-    (:settings)
     function getLightSettings(lightType) {
         var lightData = getLightData(lightType);
         var light = lightData[0];
@@ -935,6 +912,10 @@ class BikeLightsView extends  WatchUi.View  {
         var isFloat = false;
         for (i = index; i < chars.size(); i++) {
             var char = chars[i];
+            if (stringValue == null && char == ' ') {
+                continue; // Trim leading spaces
+            }
+
             if (char == '.') {
                 isFloat = true;
             }

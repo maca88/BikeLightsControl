@@ -11,5 +11,8 @@
 
         <!-- Background color -->
         <property id="BC" type="number">1</property>
+
+        <!-- Invert lights -->
+        <property id="IL" type="boolean">false</property>
     </properties>
 </resources>

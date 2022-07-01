@@ -11,6 +11,7 @@
 
     <string id="AC">Button Color</string>
     <string id="BC">Background Color</string>
+    <string id="IL">Invert lights</string>
 
     <string id="Red">Red</string>
     <string id="DarkRed">Dark Red</string>

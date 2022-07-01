@@ -50,7 +50,6 @@ class BikeLightsControlView extends BikeLightsView {
 
     private var _updateUiCounter = 0;
     private var _timer;
-    private var _menuRef;
     private var _insideMenu = false;
     private var _menuOpening = false;
     private var _backgroundColor = null;
@@ -91,16 +90,16 @@ class BikeLightsControlView extends BikeLightsView {
         ];
         var menu = _initializedLights > 1
             ? WatchUi has :Menu2
-                ? new Settings.LightsMenu(self, menuContext)
+                ? new LightsSettings.LightsMenu(self, menuContext, true)
                 : new LegacySettings.LightsMenu(self, menuContext)
             : WatchUi has :Menu2
-                ? new Settings.LightMenu(getLightData(null)[0].type, self, menuContext)
+                ? new LightsSettings.LightMenu(getLightData(null)[0].type, self, menuContext, true)
                 : new LegacySettings.LightMenu(getLightData(null)[0].type, self, menuContext);
         var delegate = WatchUi has :Menu2
-            ? new Settings.MenuDelegate(menu)
+            ? new MenuDelegate(menu)
             : new LegacySettings.MenuDelegate(menu);
+
         _insideMenu = true;
-        _menuRef = menu.weak();
         WatchUi.pushView(menu, delegate, WatchUi.SLIDE_IMMEDIATE);
         return true;
     }
@@ -197,10 +196,6 @@ class BikeLightsControlView extends BikeLightsView {
         BikeLightsView.onSettingsChanged();
         _backgroundColor = Properties.getValue("BC");
         WatchUi.requestUpdate();
-        if (_insideMenu && _menuRef.stillAlive()) {
-            _menuRef.get().close();
-            _menuOpening = true;
-        }
 
         resetLights();
     }
@@ -245,7 +240,7 @@ class BikeLightsControlView extends BikeLightsView {
     }
 
     protected function getPropertyValue(key) {
-        return key.equals("RL") || key.equals("IL") ? false : Properties.getValue(key);
+        return key.equals("RL") ? false : Properties.getValue(key);
     }
 
     protected function preCalculate(dc, width, height) {
@@ -268,6 +263,13 @@ class BikeLightsControlView extends BikeLightsView {
 
     protected function drawLight(lightData, position, dc, width, fgColor, bgColor) {
         var justification = lightData[0].type;
+        if (_invertLights) {
+            justification = justification == 0 ? 2 : 0;
+            position = position == 1 ? 3
+              : position == 3 ? 1
+              : position;
+        }
+
         var direction = justification == 0 ? 1 : -1;
         var lightX = Math.round(width * 0.25f * position);
         var batteryStatus = getLightBatteryStatus(lightData);

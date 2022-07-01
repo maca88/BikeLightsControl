@@ -18,6 +18,7 @@ base.excludeAnnotations = $(rectangle.excludeAnnotations)
 # Rectangle non touch screen devices
 edge_520.excludeAnnotations = $(rectangleNonTouchScreen)
 edge520plus.excludeAnnotations = $(rectangleNonTouchScreen)
+edge530.excludeAnnotations = $(rectangleNonTouchScreen)
 venusq.excludeAnnotations = $(rectangleNonTouchScreen)
 venusqm.excludeAnnotations = $(rectangleNonTouchScreen)
 

@@ -21,6 +21,9 @@
                 <listEntry value="1">@Strings.Auto</listEntry>
             </settingConfig>
         </setting>
+        <setting propertyKey="@Properties.IL" title="@Strings.IL">
+            <settingConfig type="boolean" />
+        </setting>
         <setting propertyKey="@Properties.CC" title="@Strings.CC">
             <settingConfig type="list">
                 <listEntry value="1">@Strings.Primary</listEntry>
