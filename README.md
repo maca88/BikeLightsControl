@@ -44,6 +44,7 @@ Bike Lights Control is a [widget](https://developer.garmin.com/connect-iq/connec
 - Bontrager Ion 200 RT
 - Bontrager Ion 800 RT
 - Bontrager Flare RT
+- Garmin Varia TL300
 - Garmin Varia RTL500
 - Garmin Varia RTL501
 - Garmin Varia RTL510
