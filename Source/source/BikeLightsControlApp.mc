@@ -46,6 +46,10 @@ class BikeLightsControlApp extends Application.AppBase {
         _view.onSettingsChanged();
     }
 
+    function onNightModeChanged() {
+        WatchUi.requestUpdate();
+    }
+
     // Return the initial view of your application here
     function getInitialView() {
         if (_view == null) {

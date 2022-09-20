@@ -43,10 +43,15 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     private var _batteryY;
     private var _lightY;
     private var _offsetX;
-    private var _fgColor = 0xFFFFFF /* COLOR_WHITE */;
 
-    private var _primaryLightData = new [3];
-    private var _secondaryLightData = new [3];
+    // Light data:
+    // 0. BikeLight instance
+    // 1. Light text (S])
+    // 2. Light modes
+    // 3. Serial number
+    // 4. Icon color
+    private var _headlightData = new [5];
+    private var _taillightData = new [5];
 
     function initialize() {
         GlanceView.initialize();
@@ -84,16 +89,23 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
             _errorCode = _lightNetwork.update();
         }
 
+        var deviceSettings = System.getDeviceSettings();
+        var bgColor = deviceSettings has :isNightModeEnabled && !deviceSettings.isNightModeEnabled
+            ? 0xFFFFFF /* COLOR_WHITE */
+            : 0x000000 /* COLOR_BLACK */;
+        var fgColor = bgColor == 0x000000 /* COLOR_BLACK */
+            ? 0xFFFFFF /* COLOR_WHITE */
+            : 0x000000 /* COLOR_BLACK */;
         var width = dc.getWidth();
         var height = dc.getHeight();
-        setTextColor(dc, _fgColor);
-
+        dc.setColor(fgColor, bgColor);
+        dc.clear();
         if (_initializedLights == 0) {
             dc.drawText(width / 2, height / 2, 2, "No network", 1 /* TEXT_JUSTIFY_CENTER */ | 4 /* TEXT_JUSTIFY_VCENTER */);
             return;
         }
 
-        draw(dc, width, height, _fgColor, 0x000000 /* COLOR_BLACK */);
+        draw(dc, width, height, fgColor, bgColor);
     }
 
     function onNetworkStateUpdate(networkState) {
@@ -104,43 +116,19 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
 
         //System.println("onNetworkStateUpdate=" + networkState);
         if (_initializedLights > 0 && networkState != 2 /* LIGHT_NETWORK_STATE_FORMED */) {
+            // Set the mode to disconnected in order to be recorded in case lights recording is enabled
+            updateLightTextAndMode(_headlightData, -1);
+            updateLightTextAndMode(_taillightData, -1);
             releaseLights();
             WatchUi.requestUpdate();
             return;
         }
 
-        var lights = _lightNetwork.getBikeLights();
-        if (_initializedLights > 0 || networkState != 2 /* LIGHT_NETWORK_STATE_FORMED */ || lights == null) {
+        if (_initializedLights > 0 || networkState != 2 /* LIGHT_NETWORK_STATE_FORMED */) {
             return;
         }
 
-        var totalLights = lights.size();
-        var initializedLights = 0;
-        for (var i = 0; i < totalLights; i++) {
-            var light = lights[i];
-            if (light == null) {
-                return;
-            }
-
-            var lightType = light.type;
-            if (lightType != 0 && lightType != 2) {
-                return;
-            }
-
-            var lightData = lightType == 0 /* LIGHT_TYPE_HEADLIGHT */ || totalLights == 1
-                ? _primaryLightData
-                : _secondaryLightData;
-            if (lightData[0] != null) {
-                continue;
-            }
-
-            lightData[0] = light;
-            updateLightTextAndMode(lightData, light.mode);
-            initializedLights++;
-        }
-
-        _initializedLights = initializedLights;
-        WatchUi.requestUpdate();
+        initializeLights();
     }
 
     function onSettingsChanged() {
@@ -150,14 +138,26 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
             ? "LC" + currentConfig
             : "LC";
         var configuration = parseConfiguration(Properties.getValue(configKey));
-        var headlightModes = configuration[0];
-        var taillightModes = configuration[1];
-        _primaryLightData[2] = headlightModes != null ? headlightModes : taillightModes;
-        _secondaryLightData[2] = headlightModes != null ? taillightModes : null;
-        _individualNetwork = configuration[2];
-        if (_lightNetwork != null && (_individualNetwork != null /* Is enabled */ || _lightNetwork instanceof AntLightNetwork.IndividualLightNetwork)) {
+        var hlData = _headlightData;
+        var tlData = _taillightData;
+
+        // configuration[0];  // Headlight modes
+        // configuration[1];  // Headlight serial number
+        // configuration[2];  // Headlight color
+        // configuration[3];  // Taillight modes
+        // configuration[4];  // Taillight serial number
+        // configuration[5];  // Taillight color
+        for (var i = 0; i < 6; i++) {
+            var lightData = i < 3 ? hlData : tlData;
+            lightData[2 + (i % 3)] = configuration[i];
+        }
+
+        _individualNetwork = configuration[6];
+        if (_individualNetwork != null /* Is enabled */ || _lightNetwork instanceof AntLightNetwork.IndividualLightNetwork) {
             recreateLightNetwork();
         }
+
+        initializeLights();
     }
 
     function updateLight(light, mode) {
@@ -166,16 +166,13 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
             return;
         }
 
-        var lightData = _initializedLights == 1 || lightType == 0 /* LIGHT_TYPE_HEADLIGHT */
-            ? _primaryLightData
-            : _secondaryLightData;
+        var lightData = getLightData(lightType);
         var oldLight = lightData[0];
         if (oldLight == null || oldLight.identifier != light.identifier) {
             return;
         }
 
         lightData[0] = light;
-
         WatchUi.requestUpdate();
     }
 
@@ -190,12 +187,12 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
 
     private function draw(dc, width, height, fgColor, bgColor) {
         if (_initializedLights == 1) {
-            drawLight(_primaryLightData, 2, dc, width, fgColor, bgColor);
+            drawLight(getLightData(null), 2, dc, width, fgColor, bgColor);
             return;
         }
 
-        drawLight(_primaryLightData, 1, dc, width, fgColor, bgColor);
-        drawLight(_secondaryLightData, 3, dc, width, fgColor, bgColor);
+        drawLight(_headlightData, 1, dc, width, fgColor, bgColor);
+        drawLight(_taillightData, 3, dc, width, fgColor, bgColor);
     }
 
     private function drawLight(lightData, position, dc, width, fgColor, bgColor) {
@@ -213,14 +210,20 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         var batteryStatus = getLightBatteryStatus(lightData);
         var lightXOffset = justification == 0 ? -4 : 2;
 
-        dc.setColor(fgColor, bgColor);
+        var iconColor = lightData[4];
+        if (iconColor != null && iconColor != 1 /* Black/White */) {
+            dc.setColor(iconColor, -1 /* COLOR_TRANSPARENT */);
+        } else {
+            dc.setColor(fgColor, bgColor);
+        }
+
         dc.drawText(lightX + (direction * (68 /* _batteryWidth *// 2)) + lightXOffset, _lightY, _lightsFont, lightData[1], justification);
         drawBattery(dc, fgColor, lightX, _batteryY, batteryStatus);
     }
 
     private function drawBattery(dc, fgColor, x, y, batteryStatus) {
         // Draw the battery shell
-        setTextColor(dc, fgColor);
+        dc.setColor(fgColor, -1 /* COLOR_TRANSPARENT */);
         dc.drawText(x, y, _batteryFont, "B", 1 /* TEXT_JUSTIFY_CENTER */);
 
         // Do not draw the indicator in case the light is not connected anymore or an invalid status is given
@@ -233,8 +236,45 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         var color = batteryStatus == 5 /* BATT_STATUS_CRITICAL */ ? 0xFF0000 /* COLOR_RED */
             : batteryStatus > 2 /* BATT_STATUS_GOOD */ ? 0xFF5500 /* COLOR_ORANGE */
             : 0x00AA00; /* COLOR_DK_GREEN */
-        setTextColor(dc, color);
+        dc.setColor(color, -1 /* COLOR_TRANSPARENT */);
         dc.drawText(x, y, _batteryFont, batteryStatus.toString(), 1 /* TEXT_JUSTIFY_CENTER */);
+    }
+
+    private function initializeLights() {
+        releaseLights();
+        var lightNetwork = _lightNetwork;
+        var lights = lightNetwork != null ? lightNetwork.getBikeLights() : null;
+        if (lights == null) {
+            return;
+        }
+
+        var initializedLights = 0;
+        var hasSerialNumber = _headlightData[3] != null || _taillightData[3] != null;
+        for (var i = 0; i < lights.size(); i++) {
+            var light = lights[i];
+            var lightType = light != null ? light.type : 7;
+            if (lightType != 0 && lightType != 2) {
+                break;
+            }
+
+            var lightData = getLightData(lightType);
+            var serial = lightData[3];
+            if ((hasSerialNumber && lightData[2] /* Light modes */ == null) ||
+                (hasSerialNumber && serial != null && serial != lightNetwork.getProductInfo(light.identifier).serial)) {
+                continue;
+            }
+
+            if (lightData[0] != null) {
+                continue;
+            }
+
+            lightData[0] = light;
+            updateLightTextAndMode(lightData, light.mode);
+            initializedLights++;
+        }
+
+        _initializedLights = initializedLights;
+        WatchUi.requestUpdate();
     }
 
     private function getLightBatteryStatus(lightData) {
@@ -253,12 +293,8 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
 
     private function releaseLights() {
         _initializedLights = 0;
-        _primaryLightData[0] = null;
-        _secondaryLightData[0] = null;
-    }
-
-    private function setTextColor(dc, color) {
-        dc.setColor(color, -1 /* COLOR_TRANSPARENT */);
+        _headlightData[0] = null;
+        _taillightData[0] = null;
     }
 
     private function getLightText(lightType, mode, lightModes) {
@@ -277,6 +313,12 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         return lightType == (_invertLights ? 2 /* LIGHT_TYPE_TAILLIGHT */ : 0 /* LIGHT_TYPE_HEADLIGHT */) ? lightModeCharacter + ")" : "(" + lightModeCharacter;
     }
 
+    private function getLightData(lightType) {
+        return lightType == null
+            ? _headlightData[0] != null ? _headlightData : _taillightData
+            : lightType == 0 ? _headlightData : _taillightData;
+    }
+
     private function getFont(key) {
         return WatchUi.loadResource(Rez.Fonts[key]);
     }
@@ -284,14 +326,18 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     // <GlobalFilters>#<HeadlightModes>#<HeadlightFilters>#<TaillightModes>#<TaillightFilters>
     private function parseConfiguration(value) {
         if (value == null || value.length() == 0) {
-            return new [3];
+            return new [7];
         }
 
         var indexResult = [0 /* next index */];
         var chars = value.toCharArray();
         return [
-            parseLightModes(chars, 0, indexResult),
-            parseLightModes(chars, indexResult[0], indexResult),
+            parseLightInfo(chars, 0, indexResult), // Headlight light modes
+            parseLightInfo(chars, 1, indexResult), // Headlight serial number
+            parseLightInfo(chars, 2, indexResult), // Headlight icon color
+            parseLightInfo(chars, 0, indexResult), // Taillight light modes
+            parseLightInfo(chars, 1, indexResult), // Taillight serial number
+            parseLightInfo(chars, 2, indexResult), // Taillight icon color
             parseIndividualNetwork(chars, indexResult[0], indexResult),
         ];
     }
@@ -303,15 +349,31 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
             : new AntPlus.LightNetwork(_lightNetworkListener);
     }
 
-    private function parseLightModes(chars, i, indexResult) {
-        if (i < 0 || chars[i] != '#') {
+    private function parseLightInfo(chars, dataType, indexResult) {
+        var index = indexResult[0];
+        if (index < 0 || (dataType == 0 && chars[index] != '#')) {
             indexResult[0] = -1;
             return null;
         }
 
-        var result = parseLong(chars, i + 1, indexResult);
-        indexResult[0] = indexResult[0] + 1; // Skip filters
-        return result;
+        var value = null;
+        if (dataType == 0 || chars[index] != '#') {
+            value = parse(1 /* NUMBER */, chars, null, indexResult);
+        }
+
+        if (dataType == 2 /* Icon color */) {
+            indexResult[0] = indexResult[0] + 1; // Skip filters
+        }
+
+        if (value == null || dataType == 2  /* Icon color */) {
+            return value;
+        }
+
+        var serial = dataType == 1;
+        var result = (value.toLong() << (serial ? 31 : 32)) | parse(1 /* NUMBER */, chars, null, indexResult); // TODO: Change this to 31 when making a major version change
+        return serial
+            ? result.toNumber()
+            : result;
     }
 
     private function parseIndividualNetwork(chars, i, indexResult) {
@@ -343,27 +405,22 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         ];
     }
 
-    private function parseLong(chars, index, resultIndex) {
-        var left = parse(1 /* NUMBER */, chars, index, resultIndex);
-        if (left == null) {
-            return null;
-        }
-
-        var right = parse(1 /* NUMBER */, chars, resultIndex[0] + 1, resultIndex);
-        return (left.toLong() << 32) | right;
-    }
-
     private function parse(type, chars, index, resultIndex) {
+        index = index == null ? resultIndex[0] + 1 : index;
         var stringValue = null;
         var i;
         var isFloat = false;
         for (i = index; i < chars.size(); i++) {
             var char = chars[i];
+            if (stringValue == null && char == ' ') {
+                continue; // Trim leading spaces
+            }
+
             if (char == '.') {
                 isFloat = true;
             }
 
-            if (char == ':' || char == '|' || (type == 1 /* NUMBER */ && (char == '/' || char > 57 /* 9 */ || char < 45 /* - */))) {
+            if (char == ':' || char == '|' || char == '!' || (type == 1 /* NUMBER */ && (char == '/' || char > 57 /* 9 */ || char < 45 /* - */))) {
                 break;
             }
 

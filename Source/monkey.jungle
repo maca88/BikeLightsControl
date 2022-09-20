@@ -31,6 +31,7 @@ venud.excludeAnnotations = $(roundHighResolution);hasGlance
 d2airx10.excludeAnnotations = $(roundHighResolution);staticGlance
 descentmk2.excludeAnnotations = $(roundNonTouchScreen);staticGlance
 descentmk2s.excludeAnnotations = $(roundNonTouchScreen);staticGlance
+edge1040.excludeAnnotations = $(rectangleTouchScreen);staticGlance
 enduro.excludeAnnotations = $(roundNonTouchScreen);staticGlance
 epix2.excludeAnnotations = $(roundHighResolution);staticGlance
 fenix6pro.excludeAnnotations = $(roundNonTouchScreen);staticGlance

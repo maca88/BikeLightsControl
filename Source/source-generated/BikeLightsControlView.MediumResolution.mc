@@ -62,6 +62,7 @@ class BikeLightsControlView extends BikeLightsView {
         var zone = System.getClockTime().timeZoneOffset;
         _defaultSunset = getSecondsOfDay(65700 /* 18:15 */ - zone);
         _defaultSunrise = getSecondsOfDay(22500 /* 6:15 */ - zone);
+        _separatorColor = -1; // No separator
     }
 
     function onPosition(info) {
@@ -223,20 +224,26 @@ class BikeLightsControlView extends BikeLightsView {
     }
 
     protected function getBackgroundColor() {
-        if (_backgroundColor == 1) {
+        if (_backgroundColor != 1 /* Auto */) {
+            return _backgroundColor;
+        }
+
+        var isDay;
+        var deviceSettings = System.getDeviceSettings();
+        if (deviceSettings has :isNightModeEnabled) {
+            isDay = !deviceSettings.isNightModeEnabled;
+        } else {
             var sunset = _sunsetTime != null ? _sunsetTime : _defaultSunset;
             var sunrise = _sunriseTime != null ? _sunriseTime : _defaultSunrise;
             var now = (Time.now().value() - _todayMoment) % 86400;
-            var isDay = sunrise > sunset /* Whether timespan goes into the next day */
+            isDay = sunrise > sunset /* Whether timespan goes into the next day */
                 ? now > sunrise || now < sunset
                 : now > sunrise && now < sunset;
-
-            return isDay
-                ? 0xFFFFFF /* COLOR_WHITE */
-                : 0x000000; /* COLOR_BLACK */
         }
 
-        return _backgroundColor;
+        return isDay
+            ? 0xFFFFFF /* COLOR_WHITE */
+            : 0x000000; /* COLOR_BLACK */
     }
 
     protected function getPropertyValue(key) {
@@ -279,6 +286,11 @@ class BikeLightsControlView extends BikeLightsView {
 
         if (title != null && _titleY != null) {
             dc.drawText(lightX, _titleY, _titleFont, title, 1 /* TEXT_JUSTIFY_CENTER */);
+        }
+
+        var iconColor = lightData[16];
+        if (iconColor != null && iconColor != 1 /* Black/White */) {
+            dc.setColor(iconColor, -1 /* COLOR_TRANSPARENT */);
         }
 
         dc.drawText(lightX + (direction * (49 /* _batteryWidth */ / 2)) + lightXOffset, _lightY, _lightsFont, lightData[1], justification);
