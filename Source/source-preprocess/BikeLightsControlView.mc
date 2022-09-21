@@ -43,6 +43,13 @@ class BikeLightsControlInputDelegate extends WatchUi.InputDelegate {
 
         return result;
     }
+
+    (:settings)
+    function onTap(clickEvent) {
+        return _eventHandler.stillAlive()
+            ? _eventHandler.get().openMenu()
+            : false;
+    }
 }
 
 (/* #include TARGET */)
@@ -75,11 +82,22 @@ class BikeLightsControlView extends BikeLightsView {
 
     (:settings)
     function openMenu() {
-        if (_insideMenu ||
-            _errorCode != null ||
+        var menu = null;
+        if (_insideMenu) {
+            return false;
+        }
+
+        if (_errorCode != null ||
             _initializedLights == 0 ||
             !validateSettingsLightModes(headlightData[0]) ||
             !validateSettingsLightModes(taillightData[0])) {
+            if (WatchUi has :Menu2) {
+                menu = new AppSettings.Menu();
+                _insideMenu = true;
+                WatchUi.pushView(menu, new MenuDelegate(menu), WatchUi.SLIDE_IMMEDIATE);
+                return true;
+            }
+
             return false;
         }
 
@@ -89,7 +107,7 @@ class BikeLightsControlView extends BikeLightsView {
             getLightSettings(0 /* LIGHT_TYPE_HEADLIGHT */),
             getLightSettings(2 /* LIGHT_TYPE_TAILLIGHT */)
         ];
-        var menu = _initializedLights > 1
+        menu = _initializedLights > 1
             ? WatchUi has :Menu2
                 ? new LightsSettings.LightsMenu(self, menuContext, true)
                 : new LegacySettings.LightsMenu(self, menuContext)
@@ -168,8 +186,6 @@ class BikeLightsControlView extends BikeLightsView {
             _insideMenu = false;
             WatchUi.requestUpdate();
             return;
-        } else if (self has :openMenu) {
-            _menuOpening = !openMenu();
         }
 
         resetLights();
@@ -180,7 +196,12 @@ class BikeLightsControlView extends BikeLightsView {
     }
 
     function resetLights() {
-        BikeLightsView.onShow();
+        if (_lightNetwork instanceof AntLightNetwork.IndividualLightNetwork) {
+            // We don't need to recreate IndividualLightNetwork as the network mode does not change
+            return;
+        }
+
+        recreateLightNetwork();
         WatchUi.requestUpdate();
     }
 
@@ -189,7 +210,12 @@ class BikeLightsControlView extends BikeLightsView {
             return; // The view is hidden
         }
 
+        var isInitialized = _initializedLights > 0;
         BikeLightsView.onNetworkStateUpdate(networkState);
+        if (self has :openMenu && !isInitialized && _initializedLights > 0) {
+            _menuOpening = !openMenu();
+        }
+
         WatchUi.requestUpdate();
     }
 
@@ -198,7 +224,10 @@ class BikeLightsControlView extends BikeLightsView {
         _backgroundColor = Properties.getValue("BC");
         WatchUi.requestUpdate();
 
-        resetLights();
+        // Do not reset lights before the widget is shown
+        if (_timer != null) {
+            resetLights();
+        }
     }
 
     function updateLight(light, mode) {

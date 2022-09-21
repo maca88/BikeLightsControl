@@ -112,6 +112,10 @@ class BikeLightsView extends  WatchUi.View  {
     protected var _todayMoment;
     protected var _sunsetTime;
     protected var _sunriseTime;
+    // Callbacks (value must be a weak reference)
+    public var onLightModeChangeCallback;
+    public var onLightControlModeChangeCallback;
+
     private var _lastUpdateTime = 0;
     private var _lastOnShowCallTime = 0;
 
@@ -363,6 +367,10 @@ class BikeLightsView extends  WatchUi.View  {
         if (newControlMode != null) {
             setLightProperty("CM", lightType, newControlMode);
             lightData[4] = newControlMode;
+            var callback = onLightControlModeChangeCallback;
+            if (callback != null && callback.stillAlive() && callback.get() has :onLightControlModeChange) {
+                callback.get().onLightControlModeChange(lightType, newControlMode);
+            }
         }
     }
 
@@ -712,6 +720,13 @@ class BikeLightsView extends  WatchUi.View  {
         return true;
     }
 
+    protected function recreateLightNetwork() {
+        release();
+        _lightNetwork = _individualNetwork != null
+            ? new AntLightNetwork.IndividualLightNetwork(_individualNetwork[0], _individualNetwork[1], _lightNetworkListener)
+            : new AntPlus.LightNetwork(_lightNetworkListener);
+    }
+
     // The below source code was ported from: https://www.esrl.noaa.gov/gmd/grad/solcalc/main.js
     // which is used for the NOAA Solar Calculator: https://www.esrl.noaa.gov/gmd/grad/solcalc/
     protected function getSunriseSet(rise, time, position) {
@@ -782,6 +797,11 @@ class BikeLightsView extends  WatchUi.View  {
             fitField.setData(mode);
         }
 
+        var callback = onLightModeChangeCallback;
+        if (callback != null && callback.stillAlive() && callback.get() has :onLightModeChange) {
+            callback.get().onLightModeChange(lightType, mode);
+        }
+
         return true;
     }
 
@@ -835,13 +855,6 @@ class BikeLightsView extends  WatchUi.View  {
             headlightData[3] = forceSmartMode[0] == 1;
             taillightData[3] = forceSmartMode[1] == 1;
         }
-    }
-
-    private function recreateLightNetwork() {
-        release();
-        _lightNetwork = _individualNetwork != null
-            ? new AntLightNetwork.IndividualLightNetwork(_individualNetwork[0], _individualNetwork[1], _lightNetworkListener)
-            : new AntPlus.LightNetwork(_lightNetworkListener);
     }
 
     private function drawLightPanels(dc, width, height, fgColor, bgColor) {
