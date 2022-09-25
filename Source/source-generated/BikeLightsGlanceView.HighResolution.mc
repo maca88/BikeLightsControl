@@ -288,16 +288,13 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     }
 
     private function updateLightTextAndMode(lightData, mode) {
-        lightData[1] = getLightText(lightData[0].type, mode, lightData[2]);
-    }
+        var light = lightData[0];
+        if (light == null) {
+            return;
+        }
 
-    private function releaseLights() {
-        _initializedLights = 0;
-        _headlightData[0] = null;
-        _taillightData[0] = null;
-    }
-
-    private function getLightText(lightType, mode, lightModes) {
+        var lightType = light.type;
+        var lightModes = lightData[2];
         var lightModeCharacter = "";
         if (mode < 0) {
             lightModeCharacter = "X";
@@ -310,7 +307,13 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
                 : $.lightModeCharacters[index];
         }
 
-        return lightType == (_invertLights ? 2 /* LIGHT_TYPE_TAILLIGHT */ : 0 /* LIGHT_TYPE_HEADLIGHT */) ? lightModeCharacter + ")" : "(" + lightModeCharacter;
+        lightData[1] = lightType == (_invertLights ? 2 /* LIGHT_TYPE_TAILLIGHT */ : 0 /* LIGHT_TYPE_HEADLIGHT */) ? lightModeCharacter + ")" : "(" + lightModeCharacter;
+    }
+
+    private function releaseLights() {
+        _initializedLights = 0;
+        _headlightData[0] = null;
+        _taillightData[0] = null;
     }
 
     private function getLightData(lightType) {
