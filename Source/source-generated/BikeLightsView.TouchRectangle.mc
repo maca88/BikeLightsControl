@@ -90,6 +90,7 @@ class BikeLightsView extends  WatchUi.View  {
     private var _headlightPanel;
     private var _taillightPanel;
     private var _panelInitialized = false;
+    private var _updateSettings = false;
 
     // Pre-calculated positions
     protected var _isFullScreen;
@@ -212,6 +213,11 @@ class BikeLightsView extends  WatchUi.View  {
 
     function onUpdate(dc) {
         var timer = System.getTimer();
+        if (_updateSettings) {
+            _updateSettings = false;
+            onSettingsChanged();
+        }
+
         _lastUpdateTime = timer;
         var width = dc.getWidth();
         var height = dc.getHeight();
@@ -383,7 +389,7 @@ class BikeLightsView extends  WatchUi.View  {
         var lightData = getLightData(_initializedLights == 1 ? null
           : (_fieldWidth / 2) > location[0] ? (_invertLights ? 2 : 0)
           : (_invertLights ? 0 : 2));
-        if (getLightBatteryStatus(lightData) > 5) {
+        if (getLightBatteryStatus(lightData) > 6 /* Charging */) {
             return false; // Battery is disconnected
         }
 
@@ -570,8 +576,22 @@ class BikeLightsView extends  WatchUi.View  {
     }
 
     protected function onLightPanelModeChange(lightData, lightType, lightMode, controlMode) {
-        var newControlMode = lightMode < 0 ? controlMode != 0 /* SMART */ && lightData[17] /* Filters */ != null ? 0 : 1 /* NETWORK */
-            : controlMode != 2 /* MANUAL */ ? 2
+        if (lightMode == -2) {
+            var configValue;
+            var currentConfig = getPropertyValue("CC");;
+            var nextConfig = currentConfig;
+            do {
+                nextConfig = nextConfig == null ? 1 : (nextConfig % 3) + 1;
+                configValue = getPropertyValue(nextConfig == 1 ? "LC" : "LC" + nextConfig);
+                Properties.setValue("CC", nextConfig);
+            } while (currentConfig != nextConfig && (configValue == null || configValue.length() == 0));
+
+            _updateSettings = true;
+            return;
+        }
+
+        var newControlMode = lightMode < 0 ? 1 /* NETWORK */
+            : controlMode != 2 ? 2 /* MANUAL */
             : null;
         setLightAndControlMode(lightData, lightType, lightMode, newControlMode);
     }
@@ -599,7 +619,7 @@ class BikeLightsView extends  WatchUi.View  {
             : _lightNetwork.getBatteryStatus(light.identifier);
         if (status == null) { /* Disconnected */
             updateLightTextAndMode(lightData, -1);
-            return 6;
+            return 7; /* Disconnected */
         }
 
         return status.batteryStatus;
@@ -939,6 +959,8 @@ class BikeLightsView extends  WatchUi.View  {
         var textPadding = margin * 4;
         var groupIndex = 8;
         var settingsGroupIndex = 5;
+        var currentConfig = getPropertyValue("CC");
+        var currentConfigName = getPropertyValue("CN" + (currentConfig == null ? 1 : currentConfig));
         for (i = 0; i < totalButtonGroups; i++) {
             var totalButtons = panelSettings[settingsGroupIndex];
             var buttonWidth = buttonGroupWidth / totalButtons;
@@ -954,7 +976,9 @@ class BikeLightsView extends  WatchUi.View  {
                     return;
                 }
 
-                var modeTitle = mode < 0 ? "M" : panelSettings[modeIndex + 1];
+                var modeTitle = mode == -2 ? (currentConfigName == null ? "" : currentConfigName)
+                    : mode < 0 ? "M"
+                    : panelSettings[modeIndex + 1];
                 var titleList = StringHelper.trimText(dc, modeTitle, 4, buttonWidth - textPadding, buttonHeight - textPadding, fontTopPaddings, fontResult);
                 var titleFont = fontResult[0];
                 var titleFontHeight = dc.getFontHeight(titleFont);
@@ -1013,7 +1037,7 @@ class BikeLightsView extends  WatchUi.View  {
         var margin = 2;
         var buttonPadding = margin * 2;
         var batteryStatus = getLightBatteryStatus(lightData);
-        if (batteryStatus > 5) {
+        if (batteryStatus > 6 /* Charging */) {
             return;
         }
 
@@ -1042,7 +1066,7 @@ class BikeLightsView extends  WatchUi.View  {
                 setTextColor(dc, isNext ? bgColor : fgColor);
                 dc.drawRoundedRectangle(buttonX, buttonY, buttonWidth, buttonHeight, 8);
                 setTextColor(dc, isSelected ? panelData[3] : isNext ? bgColor : fgColor);
-                if (mode < 0) {
+                if (mode == -1) {
                     dc.drawText(titleX, titleParts[1], titleFont, $.controlModes[controlMode], 1 /* TEXT_JUSTIFY_CENTER */);
                 } else {
                     for (var k = 0; k < titleParts.size(); k += 2) {

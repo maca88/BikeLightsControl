@@ -172,7 +172,7 @@ class BikeLightsControlView extends BikeLightsView {
         }
 
         if (_menuOpening) {
-            _menuOpening = !openMenu();
+            _menuOpening = self has :openMenu ? !openMenu() : false; // If self has :openMenu is added to the if statement an exception is thrown on runtime for FR245
         }
 
         _updateUiCounter = (_updateUiCounter + 1) % 60;
@@ -212,8 +212,8 @@ class BikeLightsControlView extends BikeLightsView {
 
         var isInitialized = _initializedLights > 0;
         BikeLightsView.onNetworkStateUpdate(networkState);
-        if (self has :openMenu && !isInitialized && _initializedLights > 0) {
-            _menuOpening = !openMenu();
+        if (!isInitialized && _initializedLights > 0) {
+            _menuOpening = self has :openMenu ? !openMenu() : false; // If self has :openMenu is added to the if statement an exception is thrown on runtime for FR245
         }
 
         WatchUi.requestUpdate();
@@ -247,8 +247,11 @@ class BikeLightsControlView extends BikeLightsView {
             return;
         }
 
-        _timer.stop();
-        _timer = null;
+        if (_timer != null) {
+            _timer.stop();
+            _timer = null;
+        }
+
         release();
     }
 
@@ -330,14 +333,6 @@ class BikeLightsControlView extends BikeLightsView {
         dc.drawText(lightX + (direction * 8), _lightY + 11, _controlModeFont, $.controlModes[lightData[4]], 1 /* TEXT_JUSTIFY_CENTER */);
 // #endif
         drawBattery(dc, fgColor, lightX, _batteryY, batteryStatus);
-    }
-
-    (:touchScreen)
-    protected function onLightPanelModeChange(lightData, lightType, lightMode, controlMode) {
-        var newControlMode = lightMode < 0 ? 1 /* NETWORK */
-            : controlMode != 2 ? 2 /* MANUAL */
-            : null;
-        setLightAndControlMode(lightData, lightType, lightMode, newControlMode);
     }
 
     protected function getLightProperty(id, lightType, defaultValue) {

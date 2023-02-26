@@ -514,7 +514,7 @@ class BikeLightsView extends  WatchUi.View  {
             : _lightNetwork.getBatteryStatus(light.identifier);
         if (status == null) { /* Disconnected */
             updateLightTextAndMode(lightData, -1);
-            return 6;
+            return 7; /* Disconnected */
         }
 
         return status.batteryStatus;

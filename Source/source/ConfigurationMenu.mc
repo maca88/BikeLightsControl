@@ -7,7 +7,11 @@ using Toybox.Application.Properties as Properties;
 (:touchScreen) const backgroundValues = [0, 16777215, 1];
 (:touchScreen) const backgroundNames = [:Black, :White, :Auto];
 
-(:touchScreen) const settingValues = ["AC", "BC"];
+(:touchScreen) const configurationValues = [1, 2, 3];
+(:touchScreen) const configurationNames = [:Primary, :Secondary, :Tertiary];
+(:touchScreen) const configurationNameValues = ["CN1", "CN2", "CN3"];
+
+(:touchScreen) const settingValues = ["AC", "BC", "CC"];
 
 (:touchScreen)
 module Configuration {
@@ -24,11 +28,16 @@ module Configuration {
             var backgroundIndex = backgroundValues.indexOf(background);
             Menu2.addItem(new WatchUi.MenuItem(Rez.Strings[:AC], colorIndex < 0 ? null : Rez.Strings[colorNames[colorIndex]], 0, null));
             Menu2.addItem(new WatchUi.MenuItem(Rez.Strings[:BC], backgroundIndex < 0 ? null : Rez.Strings[backgroundNames[backgroundIndex]], 1, null));
+            // Current configuration
+            var configurationIndex = configurationValues.indexOf((Properties.getValue("CC")));
+            Menu2.addItem(new WatchUi.MenuItem(Rez.Strings[:CC], (configurationIndex < 0 ? null : Properties.getValue(configurationNameValues[configurationIndex])), 2, null));
         }
 
         function onSelect(index, menuItem) {
             var key = settingValues[index];
-            var menu = index == 0 ? new PrimaryColorMenu(_view.get(), key, menuItem) : new BackgroundColorMenu(_view.get(), key, menuItem);
+            var menu = index == 0 ? new PrimaryColorMenu(_view.get(), key, menuItem)
+                : index == 1 ? new BackgroundColorMenu(_view.get(), key, menuItem)
+                : new CurrentConfigurationMenu(_view.get(), key, menuItem);
             WatchUi.pushView(menu, new MenuDelegate(menu), WatchUi.SLIDE_IMMEDIATE);
         }
     }
@@ -38,7 +47,7 @@ module Configuration {
         private var _view;
 
         function initialize(view, key, menuItem) {
-            SettingMenu.initialize(Rez.Strings[:AC], key, menuItem, colorValues, colorNames);
+            SettingMenu.initialize(Rez.Strings[:AC], key, menuItem, colorValues, colorNames, null);
             _view = view.weak();
         }
 
@@ -52,12 +61,26 @@ module Configuration {
         private var _view;
 
         function initialize(view, key, menuItem) {
-            SettingMenu.initialize(Rez.Strings[:BC], key, menuItem, backgroundValues, backgroundNames);
+            SettingMenu.initialize(Rez.Strings[:BC], key, menuItem, backgroundValues, backgroundNames, null);
             _view = view.weak();
         }
 
         protected function updateValue(value) {
             _view.get().updateBackgroundColor(value);
+        }
+    }
+
+    class CurrentConfigurationMenu extends SettingMenu {
+
+        private var _view;
+
+        function initialize(view, key, menuItem) {
+            SettingMenu.initialize(Rez.Strings[:CC], key, menuItem, configurationValues, configurationNames, configurationNameValues);
+            _view = view.weak();
+        }
+
+        protected function updateValue(value) {
+            Application.getApp().onSettingsChanged();
         }
     }
 
@@ -67,19 +90,21 @@ module Configuration {
         private var _key;
         private var _values;
         private var _names;
+        private var _nameKeys;
 
-        function initialize(title, key, menuItem, values, names) {
+        function initialize(title, key, menuItem, values, names, nameKeys) {
             Menu2.initialize(null);
             Menu2.setTitle(title);
             _key = key;
             _menuItem = menuItem.weak();
             _values = values;
             _names = names;
-            var currentValue = Properties.getValue(key);
+            _nameKeys = nameKeys;
             for (var i = 0; i < values.size(); i++) {
                 var value = values[i];
-                var name = names[i];
-                Menu2.addItem(new WatchUi.MenuItem(Rez.Strings[name], null, value, null));
+                var name = nameKeys != null ? Properties.getValue(nameKeys[i]) : null;
+                name = name == null ? Rez.Strings[names[i]] : name;
+                Menu2.addItem(new WatchUi.MenuItem(name, null, value, null));
             }
         }
 
@@ -96,7 +121,9 @@ module Configuration {
             // Set parent sub label
             var index = _values.indexOf(value);
             if (_menuItem.stillAlive() && index >= 0) {
-                _menuItem.get().setSubLabel(Rez.Strings[_names[index]]);
+                var name = _nameKeys != null ? Properties.getValue(_nameKeys[index]) : null;
+                name = name == null ? Rez.Strings[_names[index]] : name;
+                _menuItem.get().setSubLabel(name);
             }
 
             WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
