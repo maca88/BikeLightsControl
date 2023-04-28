@@ -101,7 +101,8 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         dc.setColor(fgColor, bgColor);
         dc.clear();
         if (_initializedLights == 0) {
-            dc.drawText(width / 2, height / 2, 2, "No network", 1 /* TEXT_JUSTIFY_CENTER */ | 4 /* TEXT_JUSTIFY_VCENTER */);
+            var text = _individualNetwork ? "Bike Lights" : "No network";
+            dc.drawText(width / 2, height / 2, 2, text, 1 /* TEXT_JUSTIFY_CENTER */ | 4 /* TEXT_JUSTIFY_VCENTER */);
             return;
         }
 
@@ -153,8 +154,9 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         }
 
         _individualNetwork = configuration[6];
-        if (_individualNetwork != null /* Is enabled */ || _lightNetwork instanceof AntLightNetwork.IndividualLightNetwork) {
-            recreateLightNetwork();
+        if (_individualNetwork != null) {
+            release();
+            return;
         }
 
         initializeLights();
@@ -348,7 +350,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     private function recreateLightNetwork() {
         release();
         _lightNetwork = _individualNetwork != null
-            ? new AntLightNetwork.IndividualLightNetwork(_individualNetwork[0], _individualNetwork[1], _lightNetworkListener)
+            ? null
             : new AntPlus.LightNetwork(_lightNetworkListener);
     }
 
