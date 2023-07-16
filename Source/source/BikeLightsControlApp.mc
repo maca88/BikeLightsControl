@@ -34,7 +34,7 @@ class BikeLightsControlApp extends Application.AppBase {
 
     // onStop() is called when your application is exiting
     function onStop(state) {
-        _view.release();
+        _view.release(true);
         _view = null;
     }
 

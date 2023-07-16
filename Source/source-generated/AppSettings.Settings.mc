@@ -1,4 +1,5 @@
 using Toybox;
+using Toybox.Lang;
 using Toybox.WatchUi;
 using Toybox.Application.Properties as Properties;
 
@@ -11,11 +12,12 @@ module AppSettings {
     const configurationNameValues = ["CN1", "CN2", "CN3"];
     const configurationValues = [1, 2, 3];
     const settingValues = ["IL", "AC", "CC"];
-
     class BaseMenu extends WatchUi.Menu2 {
+        protected var viewRef;
 
-        public function initialize() {
+        public function initialize(view) {
             Menu2.initialize(null);
+            viewRef = view != null ? view.weak() : null;
         }
 
         public function close() {
@@ -29,8 +31,9 @@ module AppSettings {
 
     class Menu extends BaseMenu {
 
-        public function initialize() {
-            BaseMenu.initialize();
+        public function initialize(view) {
+            BaseMenu.initialize(view);
+
             Menu2.setTitle("Settings");
             // Invert lights
             Menu2.addItem(new WatchUi.ToggleMenuItem(Rez.Strings.IL, null, 0, Properties.getValue("IL"), null));
@@ -43,9 +46,9 @@ module AppSettings {
         }
 
         public function onSelect(index, menuItem) {
-            var key = settingValues[index];
+            var key = index < settingValues.size() ? settingValues[index] : null;
             if (index == 0) {
-                var newValue = !Properties.getValue("IL"); // Toggle invert lights
+                var newValue = !Properties.getValue(key); // Toggle invert lights
                 menuItem.setEnabled(newValue);
                 Properties.setValue(key, newValue);
                 Application.getApp().onSettingsChanged();
@@ -66,7 +69,7 @@ module AppSettings {
         private var _nameKeys;
 
         public function initialize(title, key, menuItem, values, names, nameKeys) {
-            BaseMenu.initialize();
+            BaseMenu.initialize(null);
             Menu2.setTitle(title);
             _key = key;
             _menuItem = menuItem.weak();
@@ -76,7 +79,11 @@ module AppSettings {
             for (var i = 0; i < values.size(); i++) {
                 var value = values[i];
                 var name = nameKeys != null ? Properties.getValue(nameKeys[i]) : null;
-                name = name == null ? Rez.Strings[names[i]] : name;
+                if (name == null) {
+                    name = names[i];
+                    name = name instanceof String ? name : Rez.Strings[name];
+                }
+
                 Menu.addItem(new WatchUi.MenuItem(name, null, value, null));
             }
         }
@@ -95,7 +102,11 @@ module AppSettings {
             var index = _values.indexOf(newValue);
             if (_menuItem.stillAlive() && index >= 0) {
                 var name = _nameKeys != null ? Properties.getValue(_nameKeys[index]) : null;
-                name = name == null ? Rez.Strings[_names[index]] : name;
+                if (name == null) {
+                    name = _names[index];
+                    name = name instanceof String ? name : Rez.Strings[name];
+                }
+
                 _menuItem.get().setSubLabel(name);
             }
 

@@ -63,7 +63,6 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     }
 
     function onLayout(dc) {
-        var width = dc.getWidth();
         var height = dc.getHeight();
         var padding = 3;
         _offsetX = -25;

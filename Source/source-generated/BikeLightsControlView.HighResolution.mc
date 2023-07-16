@@ -92,7 +92,7 @@ class BikeLightsControlView extends BikeLightsView {
             !validateSettingsLightModes(headlightData[0]) ||
             !validateSettingsLightModes(taillightData[0])) {
             if (WatchUi has :Menu2) {
-                menu = new AppSettings.Menu();
+                menu = new AppSettings.Menu(self);
                 _insideMenu = true;
                 WatchUi.pushView(menu, new MenuDelegate(menu), WatchUi.SLIDE_IMMEDIATE);
                 return true;
@@ -252,7 +252,7 @@ class BikeLightsControlView extends BikeLightsView {
             _timer = null;
         }
 
-        release();
+        release(true);
     }
 
     protected function getBackgroundColor() {

@@ -11,6 +11,7 @@ using Toybox.Lang;
 using Toybox.Time;
 using Toybox.Time.Gregorian;
 using Toybox.Application.Properties as Properties;
+using Toybox.Attention;
 
 (:rectangle :touchScreen :mediumResolution)
 const lightModeCharacters = [
@@ -90,7 +91,6 @@ class BikeLightsView extends  WatchUi.View  {
     private var _headlightPanel;
     private var _taillightPanel;
     private var _panelInitialized = false;
-    private var _updateSettings = false;
 
     // Pre-calculated positions
     protected var _isFullScreen;
@@ -108,6 +108,7 @@ class BikeLightsView extends  WatchUi.View  {
     (:settings) var headlightSettings;
     (:settings) var taillightSettings;
     private var _individualNetwork;
+    private var _updateSettings = false;
 
     // Fields used to evaluate filters
     protected var _todayMoment;
@@ -202,7 +203,7 @@ class BikeLightsView extends  WatchUi.View  {
         recreateLightNetwork();
     }
 
-    function release() {
+    function release(final) {
         releaseLights();
         if (_lightNetwork != null && _lightNetwork has :release) {
             _lightNetwork.release();
@@ -352,7 +353,6 @@ class BikeLightsView extends  WatchUi.View  {
             : lightSettings;
     }
 
-    (:lightButtons)
     function setLightAndControlMode(lightData, lightType, newMode, newControlMode) {
         if (lightData[0] == null || _errorCode != null) {
             return; // This can happen when in menu the network is dropped or an invalid configuration is set
@@ -547,7 +547,6 @@ class BikeLightsView extends  WatchUi.View  {
         }
 
         var panelData = lightType == 0 /* LIGHT_TYPE_HEADLIGHT */ ? _headlightPanel : _taillightPanel;
-        var totalButtonGroups = panelData[0];
         var tapX = location[0];
         var tapY = location[1];
         var groupIndex = 8;
@@ -578,7 +577,7 @@ class BikeLightsView extends  WatchUi.View  {
     protected function onLightPanelModeChange(lightData, lightType, lightMode, controlMode) {
         if (lightMode == -2) {
             var configValue;
-            var currentConfig = getPropertyValue("CC");;
+            var currentConfig = getPropertyValue("CC");
             var nextConfig = currentConfig;
             do {
                 nextConfig = nextConfig == null ? 1 : (nextConfig % 3) + 1;
@@ -741,7 +740,7 @@ class BikeLightsView extends  WatchUi.View  {
     }
 
     protected function recreateLightNetwork() {
-        release();
+        release(false);
         _lightNetwork = _individualNetwork != null
             ? new AntLightNetwork.IndividualLightNetwork(_individualNetwork[0], _individualNetwork[1], _lightNetworkListener)
             : new AntPlus.LightNetwork(_lightNetworkListener);
@@ -1030,7 +1029,6 @@ class BikeLightsView extends  WatchUi.View  {
     }
 
     private function drawLightPanel(dc, lightData, panelData, width, height, fgColor, bgColor) {
-        var light = lightData[0];
         var controlMode = lightData[4];
         var lightMode = lightData[2];
         var nextLightMode = lightData[7];
@@ -1145,7 +1143,7 @@ class BikeLightsView extends  WatchUi.View  {
             : "LC";
         var value = getPropertyValue(configKey);
         if (value == null || value.length() == 0) {
-            return new [15];
+            return new [16];
         }
 
         var filterResult = [0 /* next index */, 0 /* operator type */];

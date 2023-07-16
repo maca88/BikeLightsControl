@@ -11,6 +11,7 @@ using Toybox.Lang;
 using Toybox.Time;
 using Toybox.Time.Gregorian;
 using Toybox.Application.Properties as Properties;
+using Toybox.Attention;
 
 (:round :nonTouchScreen :mediumResolution)
 const lightModeCharacters = [
@@ -93,6 +94,7 @@ class BikeLightsView extends  WatchUi.View  {
     (:settings) var headlightSettings;
     (:settings) var taillightSettings;
     private var _individualNetwork;
+    private var _updateSettings = false;
 
     // Fields used to evaluate filters
     protected var _todayMoment;
@@ -187,7 +189,7 @@ class BikeLightsView extends  WatchUi.View  {
         recreateLightNetwork();
     }
 
-    function release() {
+    function release(final) {
         releaseLights();
         if (_lightNetwork != null && _lightNetwork has :release) {
             _lightNetwork.release();
@@ -198,6 +200,11 @@ class BikeLightsView extends  WatchUi.View  {
 
     function onUpdate(dc) {
         var timer = System.getTimer();
+        if (_updateSettings) {
+            _updateSettings = false;
+            onSettingsChanged();
+        }
+
         _lastUpdateTime = timer;
         var width = dc.getWidth();
         var height = dc.getHeight();
@@ -327,7 +334,6 @@ class BikeLightsView extends  WatchUi.View  {
             : lightSettings;
     }
 
-    (:lightButtons)
     function setLightAndControlMode(lightData, lightType, newMode, newControlMode) {
         if (lightData[0] == null || _errorCode != null) {
             return; // This can happen when in menu the network is dropped or an invalid configuration is set
@@ -633,7 +639,7 @@ class BikeLightsView extends  WatchUi.View  {
     }
 
     protected function recreateLightNetwork() {
-        release();
+        release(false);
         _lightNetwork = _individualNetwork != null
             ? new AntLightNetwork.IndividualLightNetwork(_individualNetwork[0], _individualNetwork[1], _lightNetworkListener)
             : new AntPlus.LightNetwork(_lightNetworkListener);
@@ -821,7 +827,7 @@ class BikeLightsView extends  WatchUi.View  {
             : "LC";
         var value = getPropertyValue(configKey);
         if (value == null || value.length() == 0) {
-            return new [15];
+            return new [16];
         }
 
         var filterResult = [0 /* next index */, 0 /* operator type */];
