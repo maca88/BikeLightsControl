@@ -20,7 +20,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     function onSettingsChanged() {
     }
 
-    function release() {
+    function release(final) {
     }
 }
 
@@ -79,7 +79,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     }
 
     function onHide() {
-        release();
+        release(false);
     }
 
     function onUpdate(dc) {
@@ -154,7 +154,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
 
         _individualNetwork = configuration[6];
         if (_individualNetwork != null) {
-            release();
+            release(false);
             return;
         }
 
@@ -177,7 +177,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         WatchUi.requestUpdate();
     }
 
-    function release() {
+    function release(final) {
         releaseLights();
         if (_lightNetwork != null && _lightNetwork has :release) {
             _lightNetwork.release();
@@ -347,7 +347,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
     }
 
     private function recreateLightNetwork() {
-        release();
+        release(false);
         _lightNetwork = _individualNetwork != null
             ? null
             : new /* #include ANT_NETWORK */(_lightNetworkListener);

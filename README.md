@@ -44,6 +44,7 @@ Bike Lights Control is a [widget](https://developer.garmin.com/connect-iq/connec
 - Bontrager Ion 200 RT
 - Bontrager Ion 800 RT
 - Bontrager Flare RT
+- Bryton Gardia R300
 - Garmin Varia TL300
 - Garmin Varia RTL500
 - Garmin Varia RTL501
@@ -52,10 +53,12 @@ Bike Lights Control is a [widget](https://developer.garmin.com/connect-iq/connec
 - Garmin Varia RTL515
 - Garmin Varia RTL516
 - Garmin Varia RCT715
+- Garmin Varia RCT716
 - Garmin Varia HL500
 - Garmin Varia UT800
 - Giant Recon HL1800
 - Magene L508
+- Trek Commuter Pro RT
 - Cycliq Fly12 CE (supported only by using Individual Light Network)
 - Cycliq Fly6 CE (supported only by using Individual Light Network)
 - See.Sense ACE Front/Rear (supported only by using Individual Light Network)
