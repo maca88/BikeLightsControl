@@ -1,5 +1,5 @@
 <resources>
     <font id="lightsFont" scope="glance" filename="../SmartBikeLights/Source/SmartBikeLights/resources/fonts/Lights32.fnt" antialias="true" />
-    <font id="batteryFont" scope="glance" filename="../SmartBikeLights/Source/SmartBikeLights/resources/fonts/Battery16.fnt" antialias="false" />
+    <font id="batteryFont" scope="glance" filename="../SmartBikeLights/Source/SmartBikeLights/resources/fonts/Battery16.fnt" antialias="true" />
     <font id="controlModeFont" filename="../SmartBikeLights/Source/SmartBikeLights/resources/fonts/ControlMode12.fnt" antialias="true" />
 </resources>
