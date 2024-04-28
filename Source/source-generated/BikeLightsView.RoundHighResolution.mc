@@ -519,7 +519,7 @@ class BikeLightsView extends  WatchUi.View  {
             : _lightNetwork.getBatteryStatus(light.identifier);
         if (status == null) { /* Disconnected */
             updateLightTextAndMode(lightData, -1);
-            return 7; /* Disconnected */
+            return 8; /* Disconnected */
         }
 
         return status.batteryStatus;
@@ -592,15 +592,15 @@ class BikeLightsView extends  WatchUi.View  {
     protected function drawLight(lightData, position, dc, width, fgColor, bgColor) {
     }
     protected function drawBattery(dc, fgColor, x, y, batteryStatus) {
-        // Draw the battery shell
-        setTextColor(dc, fgColor);
-        dc.drawText(x, y, _batteryFont, "B", 1 /* TEXT_JUSTIFY_CENTER */);
-
         // Do not draw the indicator in case the light is not connected anymore or an invalid status is given
         // The only way to detect whether the light is still connected is to check whether the its battery status is not null
         if (batteryStatus > 6) {
             return;
         }
+
+        // Draw the battery shell
+        setTextColor(dc, fgColor);
+        dc.drawText(x, y, _batteryFont, "B", 1 /* TEXT_JUSTIFY_CENTER */);
 
         // Draw the battery indicator
         var color = batteryStatus == 6 /* BATT_STATUS_CHARGE */ ? fgColor
