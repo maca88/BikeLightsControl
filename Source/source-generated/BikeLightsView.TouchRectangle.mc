@@ -952,7 +952,8 @@ class BikeLightsView extends  WatchUi.View  {
         // <TitlePart> := [(:Title:, :TitleY:)+]
         var panelData = new [8 + (8 * panelSettings[0]) + totalButtonGroups];
         panelData[0] = totalButtonGroups;
-        var buttonHeight = (height - 20 /* Battery */).toFloat() / totalButtonGroups;
+        var footerHeight = 20;
+        var buttonHeight = (height - footerHeight).toFloat() / totalButtonGroups;
         var fontResult = [0];
         var buttonPadding = margin * 2;
         var textPadding = margin * 4;
@@ -1017,7 +1018,7 @@ class BikeLightsView extends  WatchUi.View  {
         panelData[2] = panelSettings[3] == 0 ? _activityColor : panelSettings[3]; // Button color
         panelData[3] = panelSettings[4]; // Button text color
         panelData[4] = x - (_batteryWidth / 2) - (margin / 2); // Light name x
-        panelData[5] = y + ((20 - lightNameHeight - lightNameTopPadding) / 2); // Light name y
+        panelData[5] = y + ((footerHeight - lightNameHeight - lightNameTopPadding) / 2); // Light name y
         panelData[6] = x + (lightNameWidth / 2) + (margin / 2); // Battery x
         panelData[7] = y - 1; // Battery y
 

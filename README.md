@@ -52,12 +52,14 @@ Bike Lights Control is a [widget](https://developer.garmin.com/connect-iq/connec
 - Garmin Varia RTL511
 - Garmin Varia RTL515
 - Garmin Varia RTL516
+- Garmin Varia eRTL615
 - Garmin Varia RCT715
 - Garmin Varia RCT716
 - Garmin Varia HL500
 - Garmin Varia UT800
 - Giant Recon HL1800
 - Magene L508
+- Trek CarBack
 - Trek Commuter Pro RT
 - Cycliq Fly12 CE (supported only by using Individual Light Network)
 - Cycliq Fly6 CE (supported only by using Individual Light Network)
