@@ -89,8 +89,8 @@ class BikeLightsControlView extends BikeLightsView {
 
         if (_errorCode != null ||
             _initializedLights == 0 ||
-            !validateSettingsLightModes(headlightData[0]) ||
-            !validateSettingsLightModes(taillightData[0])) {
+            !validateSettingsLightModes(headlightData[0], headlightData[17]) ||
+            !validateSettingsLightModes(taillightData[0], taillightData[17])) {
             if (WatchUi has :Menu2) {
                 menu = new AppSettings.Menu(self);
                 _insideMenu = true;
@@ -219,8 +219,8 @@ class BikeLightsControlView extends BikeLightsView {
         WatchUi.requestUpdate();
     }
 
-    function onSettingsChanged() {
-        BikeLightsView.onSettingsChanged();
+    function onSettingsChanged(setupSensors) {
+        BikeLightsView.onSettingsChanged(setupSensors);
         _backgroundColor = Properties.getValue("BC");
         WatchUi.requestUpdate();
 

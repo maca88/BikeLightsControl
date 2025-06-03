@@ -43,11 +43,13 @@ class BikeLightsControlApp extends Application.AppBase {
             return;
         }
 
-        _view.onSettingsChanged();
+        _view.onSettingsChanged(true);
+        _view.onShow(); // Reinitialize lights
     }
 
     function onNightModeChanged() {
         WatchUi.requestUpdate();
+        _view.onShow(); // Reinitialize lights
     }
 
     // Return the initial view of your application here
@@ -56,6 +58,7 @@ class BikeLightsControlApp extends Application.AppBase {
             _view = new BikeLightsControlView();
         }
 
+        _view.onSettingsChanged(true);
         return [_view, new BikeLightsControlInputDelegate(_view)];
     }
 
@@ -65,6 +68,7 @@ class BikeLightsControlApp extends Application.AppBase {
             _view = new BikeLightsGlanceView();
         }
 
+        _view.onSettingsChanged(true);
         return [_view];
     }
 }

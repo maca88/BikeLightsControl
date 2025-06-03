@@ -58,8 +58,6 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         _lightsFont = getFont(:lightsFont);
         _batteryFont = getFont(:batteryFont);
         _lightNetworkListener = new BikeLightNetworkListener(self);
-
-        onSettingsChanged();
     }
 
     function onLayout(dc) {
@@ -131,7 +129,7 @@ class BikeLightsGlanceView extends WatchUi.GlanceView {
         initializeLights();
     }
 
-    function onSettingsChanged() {
+    function onSettingsChanged(setupSensors) {
         _invertLights = Properties.getValue("IL");
         var currentConfig = Properties.getValue("CC");
         var configKey = currentConfig != null && currentConfig > 1
